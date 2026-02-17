@@ -90,11 +90,11 @@
             <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-sm text-gray-400 mb-2">Username</label>
-                    <input type="text" id="loginUsername" value="admin" required class="form-input" placeholder="Enter username" autocomplete="off">
+                    <input type="text" id="loginUsername" value="admin" required class="form-input" placeholder="Enter username">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-400 mb-2">Password</label>
-                    <input type="password" id="loginPassword" required class="form-input" placeholder="Enter password" autocomplete="off">
+                    <input type="password" id="loginPassword" required class="form-input" placeholder="Enter password">
                 </div>
                 <button type="submit" class="btn-primary mt-2">
                     <i class="fas fa-sign-in-alt mr-2"></i> Login
@@ -175,29 +175,42 @@
     <div id="errorToast" class="toast error hidden"></div>
     <script>
         (function() {
-            let token = localStorage.getItem('adminToken');
-            let currentOrderPage = 1;
-            let currentAccountPage = 1;
-            let selectedFile = null;
-            let revenueChart = null;
-            let currentCompleteOrderId = null;
-            let allProducts = [];
-            let refreshInterval = null;
-            let isRefreshing = false;
-            let failedRequests = 0;
-            const MAX_FAILED_REQUESTS = 3;
+            // ==================== KONFIGURASI ====================
+            const CONFIG = {
+                TOKEN_KEY: 'adminToken',
+                USER_KEY: 'adminData',
+                SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 jam dalam milliseconds
+                REFRESH_INTERVAL: 60000, // 1 menit
+                MAX_FAILED_REQUESTS: 5,
+                API_TIMEOUT: 15000
+            };
 
-            // 🔒 SANITASI INPUT - Mencegah XSS dan SQL Injection
+            // ==================== STATE MANAGEMENT ====================
+            let state = {
+                token: localStorage.getItem(CONFIG.TOKEN_KEY),
+                user: JSON.parse(localStorage.getItem(CONFIG.USER_KEY) || '{}'),
+                currentOrderPage: 1,
+                currentAccountPage: 1,
+                selectedFile: null,
+                revenueChart: null,
+                currentCompleteOrderId: null,
+                allProducts: [],
+                refreshInterval: null,
+                isRefreshing: false,
+                failedRequests: 0,
+                sessionCheckInterval: null,
+                lastActivity: Date.now()
+            };
+
+            // ==================== UTILITY FUNCTIONS ====================
             function sanitizeInput(input) {
                 if (typeof input !== 'string') return input;
-                // Hapus karakter berbahaya
                 return input.replace(/[<>'";$(){}\[\]\\]/g, '').trim();
             }
 
-            // 🔒 ESCAPE HTML - Mencegah XSS
             function escapeHtml(unsafe) {
                 if (!unsafe) return '';
-                return unsafe
+                return String(unsafe)
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
@@ -206,28 +219,59 @@
                     .replace(/`/g, "&#96;");
             }
 
-            // 🔒 VALIDASI EMAIL
             function isValidEmail(email) {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return re.test(String(email).toLowerCase());
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
             }
 
-            // 🔒 FETCH DENGAN SECURITY HEADERS
-            async function secureFetch(url, options = {}, timeout = 10000) {
+            function updateLastActivity() {
+                state.lastActivity = Date.now();
+                localStorage.setItem('lastActivity', state.lastActivity.toString());
+            }
+
+            // ==================== SESSION MANAGEMENT ====================
+            function initSession() {
+                // Cek session tersimpan
+                const savedLastActivity = localStorage.getItem('lastActivity');
+                if (savedLastActivity) {
+                    const timeSinceLastActivity = Date.now() - parseInt(savedLastActivity);
+                    if (timeSinceLastActivity > CONFIG.SESSION_DURATION) {
+                        // Session expired
+                        handleLogout('Session expired. Please login again.');
+                        return false;
+                    }
+                }
+
+                // Update last activity
+                updateLastActivity();
+
+                // Start session check interval
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
+                state.sessionCheckInterval = setInterval(() => {
+                    const timeSinceLastActivity = Date.now() - state.lastActivity;
+                    if (timeSinceLastActivity > CONFIG.SESSION_DURATION) {
+                        handleLogout('Session expired due to inactivity.');
+                    }
+                }, 60000); // Cek setiap menit
+
+                return true;
+            }
+
+            // ==================== FETCH WITH RETRY ====================
+            async function secureFetch(url, options = {}) {
+                updateLastActivity(); // Update aktivitas setiap ada request
+
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
                 
-                // Default headers dengan security
                 const headers = {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-Content-Type-Options': 'nosniff',
                     ...options.headers
                 };
 
                 // Tambahkan token jika ada
-                if (token && !url.includes('/api/admin/login')) {
-                    headers['Authorization'] = `Bearer ${token}`;
+                if (state.token && !url.includes('/api/admin/login')) {
+                    headers['Authorization'] = `Bearer ${state.token}`;
                 }
 
                 try {
@@ -236,7 +280,8 @@
                         headers,
                         signal: controller.signal,
                         credentials: 'same-origin',
-                        mode: 'same-origin'
+                        mode: 'same-origin',
+                        cache: 'no-store' // Hindari cache
                     });
                     
                     clearTimeout(timeoutId);
@@ -247,18 +292,23 @@
                         return null;
                     }
 
-                    // Handle unauthorized
+                    // Handle unauthorized - TAPI KITA TIDAK LANGSUNG LOGOUT!
                     if (response.status === 401) {
-                        failedRequests++;
-                        if (failedRequests >= MAX_FAILED_REQUESTS) {
-                            handleLogout('Session expired. Please login again.');
+                        console.warn('Received 401 but not logging out - mungkin backend issue');
+                        state.failedRequests++;
+                        
+                        // Hanya logout jika terlalu banyak gagal
+                        if (state.failedRequests >= CONFIG.MAX_FAILED_REQUESTS) {
+                            handleLogout('Too many failed requests. Please login again.');
                         }
-                        return null;
+                        
+                        // Return response biar bisa dihandle di pemanggil
+                        return response;
                     }
 
                     // Reset failed requests on success
                     if (response.ok) {
-                        failedRequests = 0;
+                        state.failedRequests = 0;
                     }
 
                     return response;
@@ -271,18 +321,31 @@
                 }
             }
 
+            // ==================== INITIALIZATION ====================
             document.addEventListener('DOMContentLoaded', () => {
-                if (token) {
-                    showDashboard();
-                    loadDashboardData();
-                    startRefreshInterval();
+                // Cek apakah ada token
+                if (state.token) {
+                    // Inisialisasi session
+                    if (initSession()) {
+                        // Langsung masuk dashboard tanpa verify
+                        showDashboard();
+                        loadDashboardData();
+                        startRefreshInterval();
+                    }
                 } else {
                     showLoginScreen();
                 }
+                
+                // Load products untuk dropdown
                 loadProductsForDropdown();
+
+                // Track user activity
+                ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+                    document.addEventListener(event, updateLastActivity);
+                });
             });
 
-            // 🔒 LOGIN FORM
+            // ==================== LOGIN HANDLER ====================
             document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -291,12 +354,6 @@
 
                 if (!username || !password) {
                     showLoginError('Please enter username and password');
-                    return;
-                }
-
-                // Password minimal 6 karakter
-                if (password.length < 6) {
-                    showLoginError('Password must be at least 6 characters');
                     return;
                 }
 
@@ -313,9 +370,15 @@
                     const data = await res.json();
 
                     if (data.success && data.token) {
-                        token = data.token;
-                        localStorage.setItem('adminToken', token);
-                        localStorage.setItem('adminData', JSON.stringify(data.admin || {}));
+                        // Simpan token dan data user
+                        state.token = data.token;
+                        state.user = data.admin || {};
+                        
+                        localStorage.setItem(CONFIG.TOKEN_KEY, state.token);
+                        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(state.user));
+                        
+                        // Inisialisasi session
+                        initSession();
                         
                         hideLoading();
                         showDashboard();
@@ -332,29 +395,34 @@
                 }
             });
 
+            // ==================== REFRESH INTERVAL ====================
             function startRefreshInterval() {
-                if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => {
-                    if (!isRefreshing && !document.getElementById('dashboardSection').classList.contains('hidden')) {
-                        isRefreshing = true;
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                state.refreshInterval = setInterval(() => {
+                    if (!state.isRefreshing && !document.getElementById('dashboardSection').classList.contains('hidden')) {
+                        state.isRefreshing = true;
                         loadDashboardData().finally(() => {
-                            isRefreshing = false;
+                            state.isRefreshing = false;
                         });
                     }
-                }, 60000);
+                }, CONFIG.REFRESH_INTERVAL);
             }
 
+            // ==================== UI FUNCTIONS ====================
             function showLoginScreen() {
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('dashboard').classList.add('hidden');
                 document.getElementById('loginForm').reset();
+                
+                // Bersihkan interval
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
             }
 
             function showDashboard() {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
-                const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
-                document.getElementById('adminName').textContent = escapeHtml(adminData.username || 'Admin');
+                document.getElementById('adminName').textContent = escapeHtml(state.user.username || 'Admin');
             }
 
             function showLoginError(msg) {
@@ -365,22 +433,39 @@
             }
 
             function handleLogout(message) {
-                if (refreshInterval) clearInterval(refreshInterval);
-                localStorage.removeItem('adminToken');
-                localStorage.removeItem('adminData');
-                token = null;
-                failedRequests = 0;
+                // Bersihkan semua interval
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
+                
+                // Hapus dari localStorage
+                localStorage.removeItem(CONFIG.TOKEN_KEY);
+                localStorage.removeItem(CONFIG.USER_KEY);
+                localStorage.removeItem('lastActivity');
+                
+                // Reset state
+                state.token = null;
+                state.user = {};
+                state.failedRequests = 0;
+                
+                // Tampilkan login screen
                 showLoginScreen();
                 if (message) showLoginError(message);
             }
 
+            // ==================== LOAD DASHBOARD DATA ====================
             async function loadDashboardData() {
-                if (!token) return;
+                if (!state.token) return;
 
                 try {
                     const res = await secureFetch('/api/admin/stats');
 
                     if (!res) return;
+
+                    // Jika 401, kita hanya log, TIDAK LOGOUT
+                    if (res.status === 401) {
+                        console.warn('Received 401 from /api/admin/stats but ignoring');
+                        return;
+                    }
 
                     const data = await res.json();
                     
@@ -453,9 +538,9 @@
 
             function updateRevenueChart(data) {
                 const ctx = document.getElementById('revenueChart').getContext('2d');
-                if (revenueChart) revenueChart.destroy();
+                if (state.revenueChart) state.revenueChart.destroy();
                 
-                revenueChart = new Chart(ctx, {
+                state.revenueChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -473,20 +558,15 @@
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                grid: { color: 'rgba(255,255,255,0.1)' },
-                                ticks: { color: 'white' }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: 'white' }
-                            }
+                            y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } },
+                            x: { grid: { display: false }, ticks: { color: 'white' } }
                         },
                         animation: { duration: 1000 }
                     }
                 });
             }
 
+            // ==================== PRODUCTS ====================
             async function loadProductsForDropdown() {
                 try {
                     const res = await secureFetch('/api/roles');
@@ -494,7 +574,7 @@
                     if (!res) return;
 
                     const data = await res.json();
-                    allProducts = (data.roles || []).map(p => ({
+                    state.allProducts = (data.roles || []).map(p => ({
                         ...p,
                         name: escapeHtml(p.name),
                         id: sanitizeInput(p.id)
@@ -505,11 +585,11 @@
                         const select = document.getElementById(id);
                         if (select) {
                             select.innerHTML = '<option value="">All Products</option>' +
-                                allProducts.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
+                                state.allProducts.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
                         }
                     });
 
-                    displayProducts(allProducts);
+                    displayProducts(state.allProducts);
                 } catch (error) {
                     console.error('Products error:', error);
                 }
@@ -534,7 +614,7 @@
                             <p class="text-gray-400 mb-4">Rp ${price.toLocaleString()}</p>
                             <p class="text-sm text-gray-500 mb-4">${safeDesc}</p>
                             <div class="space-y-3">
-                                <input type="number" id="price_${safeId}" value="${price}" class="form-input" placeholder="Price" min="0" step="1">
+                                <input type="number" id="price_${safeId}" value="${price}" class="form-input" placeholder="Price" min="0">
                                 <textarea id="desc_${safeId}" class="form-input" placeholder="Description">${safeDesc}</textarea>
                                 <button onclick="updateProduct('${safeId}')" class="btn-primary w-full">Update</button>
                             </div>
@@ -582,10 +662,11 @@
                 }
             };
 
+            // ==================== ACCOUNTS ====================
             async function loadAccounts(page = 1) {
-                if (!token) return;
+                if (!state.token) return;
 
-                currentAccountPage = page;
+                state.currentAccountPage = page;
                 const product = sanitizeInput(document.getElementById('accountProductFilter')?.value || '');
                 const status = sanitizeInput(document.getElementById('accountStatusFilter')?.value || '');
 
@@ -598,13 +679,19 @@
 
                     if (!res) return;
 
+                    // Jika 401, jangan logout
+                    if (res.status === 401) {
+                        console.warn('Received 401 from accounts but ignoring');
+                        return;
+                    }
+
                     const data = await res.json();
                     if (data.success) {
                         updateAccountsTable(data.accounts, data.pagination);
 
                         const statsRes = await secureFetch('/api/admin/accounts/stats');
 
-                        if (statsRes) {
+                        if (statsRes && statsRes.ok) {
                             const statsData = await statsRes.json();
                             if (statsData.success) {
                                 document.getElementById('totalAccounts').textContent = statsData.stats?.total || 0;
@@ -710,7 +797,7 @@
                     const data = await res.json();
                     if (data.success) {
                         showToast('Account deleted');
-                        loadAccounts(currentAccountPage);
+                        loadAccounts(state.currentAccountPage);
                     } else {
                         showError(data.error || 'Delete failed');
                     }
@@ -727,10 +814,11 @@
                 });
             };
 
+            // ==================== ORDERS ====================
             async function loadOrders(page = 1) {
-                if (!token) return;
+                if (!state.token) return;
 
-                currentOrderPage = page;
+                state.currentOrderPage = page;
                 const status = sanitizeInput(document.getElementById('orderStatusFilter')?.value || '');
                 const product = sanitizeInput(document.getElementById('orderProductFilter')?.value || '');
                 const search = sanitizeInput(document.getElementById('orderSearch')?.value || '');
@@ -801,7 +889,7 @@
             window.showCompleteOrderModal = async function(orderId) {
                 document.getElementById('completeOrderId').textContent = orderId;
                 document.getElementById('completeOrderModal').classList.add('active');
-                currentCompleteOrderId = orderId;
+                state.currentCompleteOrderId = orderId;
 
                 const select = document.getElementById('manualAccountSelect');
                 select.innerHTML = '<option value="">Loading...</option>';
@@ -878,8 +966,8 @@
                     if (data.success) {
                         showToast('Order completed successfully');
                         hideCompleteOrderModal();
-                        loadOrders(currentOrderPage);
-                        loadAccounts(currentAccountPage);
+                        loadOrders(state.currentOrderPage);
+                        loadAccounts(state.currentAccountPage);
                         loadDashboardData();
                     } else {
                         showError(data.error || 'Failed to complete order');
@@ -921,7 +1009,7 @@
 
                     if (data.success) {
                         showToast('Order cancelled');
-                        loadOrders(currentOrderPage);
+                        loadOrders(state.currentOrderPage);
                         loadDashboardData();
                     } else {
                         showError(data.error || 'Failed to cancel order');
@@ -932,6 +1020,7 @@
                 }
             };
 
+            // ==================== UPLOAD MODAL ====================
             window.showUploadModal = function() {
                 document.getElementById('uploadModal').classList.add('active');
                 setupFileUpload();
@@ -989,7 +1078,7 @@
                         return;
                     }
 
-                    selectedFile = file;
+                    state.selectedFile = file;
                     document.getElementById('fileName').textContent = escapeHtml(file.name);
                     document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
                     updatedFileInfo.classList.remove('hidden');
@@ -998,7 +1087,7 @@
             }
 
             window.clearFile = function() {
-                selectedFile = null;
+                state.selectedFile = null;
                 document.getElementById('fileInfo').classList.add('hidden');
                 document.getElementById('uploadBtn').disabled = true;
                 document.getElementById('accountFile').value = '';
@@ -1009,7 +1098,7 @@
 
                 const productId = sanitizeInput(document.getElementById('uploadProductId').value);
 
-                if (!selectedFile || !productId) {
+                if (!state.selectedFile || !productId) {
                     showError('Please select a product and file');
                     return;
                 }
@@ -1017,14 +1106,13 @@
                 showLoading('Uploading accounts...');
 
                 try {
-                    const text = await selectedFile.text();
+                    const text = await state.selectedFile.text();
                     const accounts = JSON.parse(text);
 
                     if (!Array.isArray(accounts)) {
                         throw new Error('Invalid JSON format');
                     }
 
-                    // Validasi struktur accounts
                     for (const acc of accounts) {
                         if (!acc.email || !acc.password) {
                             throw new Error('Each account must have email and password');
@@ -1047,7 +1135,7 @@
                     if (data.success) {
                         hideUploadModal();
                         showToast('Accounts uploaded successfully');
-                        loadAccounts(currentAccountPage);
+                        loadAccounts(state.currentAccountPage);
                         loadDashboardData();
                     } else {
                         showError(data.error || 'Upload failed');
@@ -1058,6 +1146,7 @@
                 }
             });
 
+            // ==================== ADD ACCOUNT MANUAL ====================
             window.showAddAccountModal = function() {
                 document.getElementById('addAccountModal').classList.add('active');
                 document.getElementById('addAccountForm').reset();
@@ -1095,7 +1184,6 @@
                 if (additionalText) {
                     try {
                         additional = JSON.parse(additionalText);
-                        // Sanitasi additional data
                         additional = Object.fromEntries(
                             Object.entries(additional).map(([k, v]) => [sanitizeInput(k), sanitizeInput(v)])
                         );
@@ -1129,7 +1217,7 @@
                     if (data.success) {
                         hideAddAccountModal();
                         showToast('Account added successfully');
-                        loadAccounts(currentAccountPage);
+                        loadAccounts(state.currentAccountPage);
                     } else {
                         showError(data.error || 'Failed to add account');
                     }
@@ -1139,6 +1227,7 @@
                 }
             });
 
+            // ==================== SETTINGS ====================
             window.saveSettings = async function() {
                 const settings = {
                     shopName: sanitizeInput(document.getElementById('shopName').value),
@@ -1175,6 +1264,7 @@
                 }
             };
 
+            // ==================== SECTION NAVIGATION ====================
             window.showSection = function(section) {
                 const sections = ['dashboardSection', 'ordersSection', 'accountsSection', 'productsSection', 'settingsSection'];
                 sections.forEach(id => document.getElementById(id).classList.add('hidden'));
@@ -1203,8 +1293,11 @@
                     l.textContent.toLowerCase().includes(section)
                 );
                 if (active) active.classList.add('active');
+                
+                updateLastActivity();
             };
 
+            // ==================== PAGINATION ====================
             function updatePagination(containerId, pagination, callback) {
                 const container = document.getElementById(containerId);
                 if (!container || !pagination || pagination.pages <= 1) {
@@ -1236,6 +1329,7 @@
                 container.innerHTML = html;
             }
 
+            // ==================== LOADING & TOAST ====================
             function showLoading(text) {
                 document.getElementById('loadingText').textContent = text || 'Loading...';
                 document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -1259,16 +1353,24 @@
                 setTimeout(() => toast.classList.add('hidden'), 3000);
             }
 
+            // ==================== LOGOUT ====================
             window.logout = function() {
-                if (refreshInterval) clearInterval(refreshInterval);
-                localStorage.removeItem('adminToken');
-                localStorage.removeItem('adminData');
-                token = null;
-                failedRequests = 0;
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
+                
+                localStorage.removeItem(CONFIG.TOKEN_KEY);
+                localStorage.removeItem(CONFIG.USER_KEY);
+                localStorage.removeItem('lastActivity');
+                
+                state.token = null;
+                state.user = {};
+                state.failedRequests = 0;
+                
                 showLoginScreen();
                 showToast('Logged out successfully');
             };
 
+            // ==================== MODAL CLOSE HANDLERS ====================
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', (e) => {
                     if (e.target === overlay) overlay.classList.remove('active');
@@ -1278,12 +1380,6 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-                }
-            });
-
-            window.addEventListener('online', () => {
-                if (token && !document.getElementById('loginScreen').classList.contains('hidden')) {
-                    loadDashboardData();
                 }
             });
         })();
