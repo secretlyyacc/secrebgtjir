@@ -1,85 +1,49 @@
 {
-  "roles": [ 
+  "roles": [
     {
-      "id": "vip",
-      "name": "VIP",
-      "price": "500",
-      "description": "VIP Role with special perks",
-      "image": "/img/role/vip.png",
+      "id": "spotify_2_bulan",
+      "name": "Spotify 2 Bulan",
+      "price": "5000",
+      "description": "Spotify Premium 2 Bulan",
+      "image": "/img/role/spotiffy.png",
       "role_id": 1,
-      "stock": "1011"
+      "stock": "0"
     },
     {
-      "id": "moderator",
-      "name": "Moderator",
-      "price": "50000",
-      "description": "Moderator Role for server management",
-      "image": "/img/role/moderator.png",
-      "role_id": 3,
-      "stock": 2
-    },
-    {
-      "id": "administrator",
-      "name": "Administrator",
-      "price": "75000",
-      "description": "Full administrator privileges",
-      "image": "/img/role/administrator.png",
-      "role_id": 4,
-      "stock": "130"
-    },
-    {
-      "id": "developer",
-      "name": "Developer",
-      "price": "100000",
-      "description": "Developer access with special commands",
-      "image": "/img/role/developer.png",
-      "role_id": 5,
-      "stock": "120"
-    },
-    {
-      "id": "god",
-      "name": "God",
-      "price": "125000",
-      "description": "God mode with ultimate powers",
-      "image": "/img/role/god.png",
+      "id": "panel_do_10_droplet",
+      "name": "Panel Digital Ocean 10 Droplet",
+      "price": "40000",
+      "description": "Panel Digital Ocean dengan 10 Droplet",
+      "image": "/img/role/digitalocean10.png",
       "role_id": 2,
-      "stock": "120"
+      "stock": "0"
     },
     {
-      "id": "owner_server",
-      "name": "Owner Server",
-      "price": "150000",
-      "description": "Server owner privileges",
-      "image": "/img/role/owner_server.png",
-      "role_id": 6,
-      "stock": "120"
-    },
-    {
-      "id": "unlimited",
-      "name": "Unlimited",
-      "price": "200000",
-      "description": "Unlimited access to all features",
-      "image": "/img/role/unlimited.png",
-      "role_id": 7,
-      "stock": "1"
-    },
-    {
-      "id": "cheats",
-      "name": "Cheats",
+      "id": "panel_do_3_droplet",
+      "name": "Panel Digital Ocean 3 Droplet",
       "price": "30000",
-      "description": "Access to cheat commands",
-      "image": "/img/role/cheats.png",
-      "role_id": 8,
-      "stock": "1"
+      "description": "Panel Digital Ocean dengan 3 Droplet",
+      "image": "/img/role/digitalocean3.png",
+      "role_id": 3,
+      "stock": "0"
     },
     {
-      "id": "guardian",
-      "name": "Guardian",
-      "price": "35000",
-      "description": "Guardian role for server protection",
-      "image": "/img/role/guardian.png",
-      "role_id": 9,
-      "stock": "120"
+      "id": "netflix_1_bulan",
+      "name": "Netflix 1 Bulan",
+      "price": "20000",
+      "description": "Netflix Premium 1 Bulan",
+      "image": "/img/role/netflik.png",
+      "role_id": 4,
+      "stock": "0"
+    },
+    {
+      "id": "wetv_1_bulan",
+      "name": "WeTV 1 Bulan",
+      "price": "15000",
+      "description": "WeTV Premium 1 Bulan",
+      "image": "/img/role/wetv.png",
+      "role_id": 5,
+      "stock": "0"
     }
   ]
 }
