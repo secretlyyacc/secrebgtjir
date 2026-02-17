@@ -90,7 +90,7 @@
             <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-sm text-gray-400 mb-2">Username</label>
-                    <input type="text" id="loginUsername" required class="form-input" placeholder="Enter username">
+                    <input type="text" id="loginUsername" value="admin" required class="form-input" placeholder="Enter username">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-400 mb-2">Password</label>
@@ -182,34 +182,52 @@
         let currentCompleteOrderId = null;
         let allProducts = [];
         let refreshInterval = null;
+        let isRefreshing = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             if (token) {
                 verifyToken();
+            } else {
+                showLoginScreen();
             }
             loadProductsForDropdown();
         });
 
         async function verifyToken() {
+            if (!token) {
+                showLoginScreen();
+                return;
+            }
+            
             showLoading('Verifying...');
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
                 const res = await fetch('/api/admin/verify', { 
                     headers: { 'Authorization': `Bearer ${token}` },
+                    signal: controller.signal,
                     cache: 'no-store'
                 });
+                
+                clearTimeout(timeoutId);
+                
                 if (res.ok) { 
                     hideLoading(); 
                     showDashboard(); 
                     loadDashboardData();
                     startRefreshInterval();
                 } else { 
-                    localStorage.removeItem('adminToken'); 
-                    localStorage.removeItem('adminData');
-                    token = null;
-                    hideLoading(); 
+                    handleLogout('Session expired. Please login again.');
                 }
-            } catch { 
-                hideLoading(); 
+            } catch (error) {
+                console.error('Verify error:', error);
+                hideLoading();
+                if (error.name === 'AbortError') {
+                    handleLogout('Connection timeout. Please try again.');
+                } else {
+                    handleLogout('Network error. Please login again.');
+                }
             }
         }
 
@@ -217,18 +235,40 @@
             e.preventDefault();
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showLoginError('Please enter username and password');
+                return;
+            }
+            
             showLoading('Logging in...');
+            
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                
                 const res = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password }),
+                    signal: controller.signal
                 });
-                const data = await res.json();
-                if (data.success) {
+                
+                clearTimeout(timeoutId);
+                
+                let data;
+                try {
+                    data = await res.json();
+                } catch (e) {
+                    throw new Error('Invalid response from server');
+                }
+                
+                if (data.success && data.token) {
                     token = data.token;
                     localStorage.setItem('adminToken', token);
                     localStorage.setItem('adminData', JSON.stringify(data.admin || {}));
+                    localStorage.setItem('loginTime', Date.now().toString());
+                    
                     hideLoading();
                     showDashboard();
                     loadDashboardData();
@@ -236,21 +276,35 @@
                     showToast('Login successful');
                 } else {
                     hideLoading();
-                    showLoginError(data.error || 'Login failed');
+                    showLoginError(data.error || 'Login failed. Please check your credentials.');
                 }
-            } catch {
+            } catch (error) {
                 hideLoading();
-                showLoginError('Network error');
+                console.error('Login error:', error);
+                if (error.name === 'AbortError') {
+                    showLoginError('Connection timeout. Please try again.');
+                } else {
+                    showLoginError('Network error. Please check your connection.');
+                }
             }
         });
 
         function startRefreshInterval() {
             if (refreshInterval) clearInterval(refreshInterval);
             refreshInterval = setInterval(() => {
-                if (document.getElementById('dashboardSection').classList.contains('hidden') === false) {
-                    loadDashboardData();
+                if (!isRefreshing && !document.getElementById('dashboardSection').classList.contains('hidden')) {
+                    isRefreshing = true;
+                    loadDashboardData().finally(() => {
+                        isRefreshing = false;
+                    });
                 }
-            }, 30000);
+            }, 60000);
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginForm').reset();
         }
 
         function showDashboard() {
@@ -264,26 +318,46 @@
             const errorDiv = document.getElementById('loginError');
             errorDiv.textContent = msg;
             errorDiv.classList.remove('hidden');
-            setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+        }
+
+        function handleLogout(message) {
+            if (refreshInterval) clearInterval(refreshInterval);
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminData');
+            localStorage.removeItem('loginTime');
+            token = null;
+            showLoginScreen();
+            if (message) showLoginError(message);
         }
 
         async function loadDashboardData() {
             if (!token) return;
+            
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
                 const res = await fetch('/api/admin/stats', { 
                     headers: { 'Authorization': `Bearer ${token}` },
+                    signal: controller.signal,
                     cache: 'no-store'
                 });
+                
+                clearTimeout(timeoutId);
+                
                 if (res.status === 401) {
-                    handleUnauthorized();
+                    handleLogout('Session expired. Please login again.');
                     return;
                 }
+                
                 if (res.ok) {
                     const data = await res.json();
                     document.getElementById('totalOrders').textContent = data.stats?.totalOrders || 0;
                     document.getElementById('completedOrders').textContent = data.stats?.completedOrders || 0;
                     document.getElementById('pendingOrders').textContent = data.stats?.pendingOrders || 0;
                     document.getElementById('totalRevenue').textContent = `IDR ${(data.stats?.totalRevenue || 0).toLocaleString()}`;
+                    
                     const badge = document.getElementById('pendingBadge');
                     if (data.stats?.pendingOrders > 0) { 
                         badge.textContent = data.stats.pendingOrders; 
@@ -291,23 +365,16 @@
                     } else { 
                         badge.classList.add('hidden'); 
                     }
+                    
                     if (data.recentOrders) updateRecentOrders(data.recentOrders);
                     if (data.stockStatus) updateStockStatus(data.stockStatus);
                     if (data.revenueData) updateRevenueChart(data.revenueData);
                 }
             } catch (error) { 
-                console.error(error); 
+                if (error.name !== 'AbortError') {
+                    console.error('Dashboard error:', error); 
+                }
             }
-        }
-
-        function handleUnauthorized() {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminData');
-            token = null;
-            if (refreshInterval) clearInterval(refreshInterval);
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            showLoginError('Session expired. Please login again.');
         }
 
         function updateRecentOrders(orders) {
@@ -363,19 +430,33 @@
 
         async function loadProductsForDropdown() {
             try {
-                const res = await fetch('/api/roles', { cache: 'no-store' });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch('/api/roles', { 
+                    signal: controller.signal,
+                    cache: 'no-store' 
+                });
+                
+                clearTimeout(timeoutId);
+                
                 if (res.ok) {
                     const data = await res.json();
                     allProducts = data.roles || [];
                     const selects = ['orderProductFilter', 'accountProductFilter', 'uploadProductId', 'addAccountProductId'];
                     selects.forEach(id => {
                         const select = document.getElementById(id);
-                        if (select) select.innerHTML = '<option value="">All Products</option>' + allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                        if (select) {
+                            select.innerHTML = '<option value="">All Products</option>' + 
+                                allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                        }
                     });
                     displayProducts(allProducts);
                 }
             } catch (error) { 
-                console.error(error); 
+                if (error.name !== 'AbortError') {
+                    console.error('Products error:', error); 
+                }
             }
         }
 
@@ -402,37 +483,82 @@
         async function updateProduct(id) {
             const price = document.getElementById(`price_${id}`).value;
             const description = document.getElementById(`desc_${id}`).value;
+            
+            if (!price) {
+                showError('Price is required');
+                return;
+            }
+            
             showLoading('Updating product...');
             try {
                 const res = await fetch(`/api/admin/roles/${id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ price, description })
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 const data = await res.json();
                 hideLoading();
-                if (data.success) { showToast('Product updated'); loadProductsForDropdown(); } 
-                else showError(data.error || 'Update failed');
-            } catch { hideLoading(); showError('Network error'); }
+                
+                if (data.success) { 
+                    showToast('Product updated'); 
+                    loadProductsForDropdown(); 
+                } else { 
+                    showError(data.error || 'Update failed'); 
+                }
+            } catch { 
+                hideLoading(); 
+                showError('Network error'); 
+            }
         }
 
         async function loadAccounts(page = 1) {
             if (!token) return;
+            
             currentAccountPage = page;
             const product = document.getElementById('accountProductFilter')?.value || '';
             const status = document.getElementById('accountStatusFilter')?.value || '';
+            
             let url = `/api/admin/accounts?page=${page}&limit=20`;
             if (product) url += `&product_id=${product}`;
             if (status) url += `&status=${status}`;
+            
             try {
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch(url, { 
+                    headers: { 'Authorization': `Bearer ${token}` }, 
+                    signal: controller.signal,
+                    cache: 'no-store' 
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
                         updateAccountsTable(data.accounts, data.pagination);
-                        const statsRes = await fetch('/api/admin/accounts/stats', { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
+                        
+                        const statsRes = await fetch('/api/admin/accounts/stats', { 
+                            headers: { 'Authorization': `Bearer ${token}` }, 
+                            signal: controller.signal,
+                            cache: 'no-store' 
+                        });
+                        
                         if (statsRes.ok) {
                             const statsData = await statsRes.json();
                             if (statsData.success) {
@@ -445,7 +571,9 @@
                     }
                 }
             } catch (error) { 
-                showError('Failed to load accounts'); 
+                if (error.name !== 'AbortError') {
+                    showError('Failed to load accounts'); 
+                }
             }
         }
 
@@ -455,65 +583,134 @@
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-400">No accounts</td></tr>'; 
                 return; 
             }
-            tbody.innerHTML = accounts.map(acc => `<tr class="table-row"><td class="table-cell">#${acc.id}</td><td class="table-cell">${acc.product_id}</td><td class="table-cell">${acc.email}</td><td class="table-cell"><span class="font-mono">••••••••</span><button onclick="copyToClipboard('${acc.password.replace(/'/g, "\\'")}')" class="ml-2 text-[#60a5fa]"><i class="fas fa-copy"></i></button></td><td class="table-cell">${acc.twofa_code || '-'}</td><td class="table-cell"><span class="badge ${acc.status === 'available' ? 'badge-paid' : 'badge-completed'}">${acc.status}</span></td><td class="table-cell"><button onclick="viewAccount(${acc.id})" class="text-[#60a5fa] mr-2"><i class="fas fa-eye"></i></button>${acc.status === 'available' ? `<button onclick="deleteAccount(${acc.id})" class="text-red-400"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`).join('');
+            tbody.innerHTML = accounts.map(acc => {
+                const safePassword = acc.password.replace(/'/g, "\\'");
+                return `<tr class="table-row">
+                    <td class="table-cell">#${acc.id}</td>
+                    <td class="table-cell">${acc.product_id}</td>
+                    <td class="table-cell">${acc.email}</td>
+                    <td class="table-cell"><span class="font-mono">••••••••</span><button onclick="copyToClipboard('${safePassword}')" class="ml-2 text-[#60a5fa]"><i class="fas fa-copy"></i></button></td>
+                    <td class="table-cell">${acc.twofa_code || '-'}</td>
+                    <td class="table-cell"><span class="badge ${acc.status === 'available' ? 'badge-paid' : 'badge-completed'}">${acc.status}</span></td>
+                    <td class="table-cell">
+                        <button onclick="viewAccount(${acc.id})" class="text-[#60a5fa] mr-2"><i class="fas fa-eye"></i></button>
+                        ${acc.status === 'available' ? `<button onclick="deleteAccount(${acc.id})" class="text-red-400"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>`;
+            }).join('');
             updatePagination('accountsPagination', pagination, 'loadAccounts');
         }
 
         async function viewAccount(id) {
             try {
-                const res = await fetch(`/api/admin/accounts/${id}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                const res = await fetch(`/api/admin/accounts/${id}`, { 
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    cache: 'no-store' 
+                });
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
                         const a = data.account;
-                        document.getElementById('accountDetails').innerHTML = `<p><span class="text-gray-400">ID:</span> ${a.id}</p><p><span class="text-gray-400">Product:</span> ${a.product_id}</p><p><span class="text-gray-400">Email:</span> ${a.email}</p><p><span class="text-gray-400">Password:</span> ${a.password}</p><p><span class="text-gray-400">2FA:</span> ${a.twofa_code || '-'}</p><p><span class="text-gray-400">Additional:</span></p><pre class="bg-white/5 p-2 rounded text-xs overflow-x-auto">${JSON.stringify(a.additional_info || {}, null, 2)}</pre><p><span class="text-gray-400">Status:</span> <span class="badge ${a.status === 'available' ? 'badge-paid' : 'badge-completed'}">${a.status}</span></p>`;
+                        document.getElementById('accountDetails').innerHTML = `
+                            <p><span class="text-gray-400">ID:</span> ${a.id}</p>
+                            <p><span class="text-gray-400">Product:</span> ${a.product_id}</p>
+                            <p><span class="text-gray-400">Email:</span> ${a.email}</p>
+                            <p><span class="text-gray-400">Password:</span> ${a.password}</p>
+                            <p><span class="text-gray-400">2FA:</span> ${a.twofa_code || '-'}</p>
+                            <p><span class="text-gray-400">Additional:</span></p>
+                            <pre class="bg-white/5 p-2 rounded text-xs overflow-x-auto">${JSON.stringify(a.additional_info || {}, null, 2)}</pre>
+                            <p><span class="text-gray-400">Status:</span> <span class="badge ${a.status === 'available' ? 'badge-paid' : 'badge-completed'}">${a.status}</span></p>`;
                         document.getElementById('viewAccountModal').classList.add('active');
                     }
                 }
-            } catch { showError('Failed to load'); }
+            } catch { 
+                showError('Failed to load'); 
+            }
         }
 
-        function hideViewAccountModal() { document.getElementById('viewAccountModal').classList.remove('active'); }
+        function hideViewAccountModal() { 
+            document.getElementById('viewAccountModal').classList.remove('active'); 
+        }
 
         async function deleteAccount(id) {
             if (!confirm('Delete this account?')) return;
+            
             try {
                 const res = await fetch(`/api/admin/accounts/${id}`, { 
                     method: 'DELETE', 
                     headers: { 'Authorization': `Bearer ${token}` } 
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.success) { showToast('Account deleted'); loadAccounts(currentAccountPage); } 
-                    else showError(data.error || 'Delete failed');
+                    if (data.success) { 
+                        showToast('Account deleted'); 
+                        loadAccounts(currentAccountPage); 
+                    } else { 
+                        showError(data.error || 'Delete failed'); 
+                    }
                 }
-            } catch { showError('Network error'); }
+            } catch { 
+                showError('Network error'); 
+            }
         }
 
-        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => showError('Failed')); }
+        function copyToClipboard(text) { 
+            navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => showError('Failed')); 
+        }
 
         async function loadOrders(page = 1) {
             if (!token) return;
+            
             currentOrderPage = page;
             const status = document.getElementById('orderStatusFilter')?.value || '';
             const product = document.getElementById('orderProductFilter')?.value || '';
             const search = document.getElementById('orderSearch')?.value || '';
+            
             let url = `/api/admin/orders?page=${page}&limit=20`;
             if (status) url += `&status=${status}`;
             if (product) url += `&product=${product}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
+            
             try {
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch(url, { 
+                    headers: { 'Authorization': `Bearer ${token}` }, 
+                    signal: controller.signal,
+                    cache: 'no-store' 
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
                         updateOrdersTable(data.orders, data.pagination);
                     }
                 }
-            } catch { showError('Failed to load orders'); }
+            } catch (error) { 
+                if (error.name !== 'AbortError') {
+                    showError('Failed to load orders'); 
+                }
+            }
         }
 
         function updateOrdersTable(orders, pagination) {
@@ -522,40 +719,70 @@
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-400">No orders</td></tr>'; 
                 return; 
             }
-            tbody.innerHTML = orders.map(o => `<tr class="table-row"><td class="table-cell font-mono">${o.orderId || '-'}</td><td class="table-cell">${o.username || '-'}</td><td class="table-cell">${o.productName || o.role || '-'}</td><td class="table-cell">Rp ${(o.amount || 0).toLocaleString()}</td><td class="table-cell"><span class="badge badge-${o.status || 'pending'}">${o.status || 'pending'}</span></td><td class="table-cell">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td><td class="table-cell"><button onclick="viewOrder('${o.orderId}')" class="text-[#60a5fa] mr-2"><i class="fas fa-eye"></i></button>${o.status === 'pending' ? `<button onclick="showCompleteOrderModal('${o.orderId}')" class="text-green-400 mr-2"><i class="fas fa-check-circle"></i></button><button onclick="showCancelOrderModal('${o.orderId}')" class="text-red-400"><i class="fas fa-ban"></i></button>` : ''}</td></tr>`).join('');
+            tbody.innerHTML = orders.map(o => `<tr class="table-row">
+                <td class="table-cell font-mono">${o.orderId || '-'}</td>
+                <td class="table-cell">${o.username || '-'}</td>
+                <td class="table-cell">${o.productName || o.role || '-'}</td>
+                <td class="table-cell">Rp ${(o.amount || 0).toLocaleString()}</td>
+                <td class="table-cell"><span class="badge badge-${o.status || 'pending'}">${o.status || 'pending'}</span></td>
+                <td class="table-cell">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+                <td class="table-cell">
+                    <button onclick="viewOrder('${o.orderId}')" class="text-[#60a5fa] mr-2"><i class="fas fa-eye"></i></button>
+                    ${o.status === 'pending' ? 
+                        `<button onclick="showCompleteOrderModal('${o.orderId}')" class="text-green-400 mr-2"><i class="fas fa-check-circle"></i></button>
+                         <button onclick="showCancelOrderModal('${o.orderId}')" class="text-red-400"><i class="fas fa-ban"></i></button>` 
+                        : ''}
+                </td>
+            </tr>`).join('');
             updatePagination('ordersPagination', pagination, 'loadOrders');
         }
 
-        function viewOrder(orderId) { window.open(`/?order=${orderId}`, '_blank'); }
+        function viewOrder(orderId) { 
+            window.open(`/?order=${orderId}`, '_blank'); 
+        }
 
         async function showCompleteOrderModal(orderId) {
             document.getElementById('completeOrderId').textContent = orderId;
             document.getElementById('completeOrderModal').classList.add('active');
             currentCompleteOrderId = orderId;
+            
             const select = document.getElementById('manualAccountSelect');
             select.innerHTML = '<option value="">Loading...</option>';
             select.disabled = true;
+            
             try {
-                const orderRes = await fetch(`/api/order/${orderId}`, { cache: 'no-store' });
+                const orderRes = await fetch(`/api/order/${orderId}`, { 
+                    cache: 'no-store' 
+                });
+                
                 if (orderRes.ok) {
                     const orderData = await orderRes.json();
                     if (orderData.success && orderData.order) {
                         let productId = orderData.order?.productId || orderData.order?.roleId || orderData.order?.role;
+                        
                         if (productId) {
                             productId = productId.toString().toLowerCase().trim();
+                            
                             const accountsRes = await fetch(`/api/admin/accounts?product_id=${encodeURIComponent(productId)}&status=available&limit=50`, { 
                                 headers: { 'Authorization': `Bearer ${token}` },
                                 cache: 'no-store'
                             });
-                            if (accountsRes.status === 401) { handleUnauthorized(); return; }
+                            
+                            if (accountsRes.status === 401) { 
+                                handleLogout('Session expired'); 
+                                return; 
+                            }
+                            
                             if (accountsRes.ok) {
                                 const accountsData = await accountsRes.json();
                                 select.disabled = false;
+                                
                                 if (!accountsData.accounts || accountsData.accounts.length === 0) {
                                     select.innerHTML = '<option value="">No accounts available</option>';
                                     document.getElementById('accountStockInfo').innerHTML = '<span class="text-yellow-400">⚠️ No available accounts</span>';
                                 } else {
-                                    select.innerHTML = '<option value="">Choose account...</option>' + accountsData.accounts.map(a => `<option value="${a.id}">${a.email}</option>`).join('');
+                                    select.innerHTML = '<option value="">Choose account...</option>' + 
+                                        accountsData.accounts.map(a => `<option value="${a.id}">${a.email}</option>`).join('');
                                     document.getElementById('accountStockInfo').innerHTML = `<span class="text-green-400">✅ ${accountsData.accounts.length} available</span>`;
                                 }
                             } else {
@@ -581,22 +808,38 @@
             }
         }
 
-        function hideCompleteOrderModal() { document.getElementById('completeOrderModal').classList.remove('active'); }
+        function hideCompleteOrderModal() { 
+            document.getElementById('completeOrderModal').classList.remove('active'); 
+        }
 
         async function completeOrderManually() {
             const orderId = document.getElementById('completeOrderId').textContent;
             const accountId = document.getElementById('manualAccountSelect').value;
-            if (!accountId) { showError('Select an account'); return; }
+            
+            if (!accountId) { 
+                showError('Select an account'); 
+                return; 
+            }
+            
             const btn = document.getElementById('completeOrderBtn');
             btn.disabled = true; 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            
             try {
                 const res = await fetch(`/api/admin/orders/${orderId}/complete`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ accountId })
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) { 
@@ -608,9 +851,15 @@
                     } else { 
                         showError(data.error || 'Failed'); 
                     }
-                } else { showError('Failed to complete'); }
-            } catch { showError('Network error'); } 
-            finally { btn.disabled = false; btn.innerHTML = 'Complete'; }
+                } else { 
+                    showError('Failed to complete'); 
+                }
+            } catch { 
+                showError('Network error'); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerHTML = 'Complete'; 
+            }
         }
 
         function showCancelOrderModal(orderId) { 
@@ -618,19 +867,31 @@
             document.getElementById('cancelOrderModal').classList.add('active'); 
         }
 
-        function hideCancelOrderModal() { document.getElementById('cancelOrderModal').classList.remove('active'); }
+        function hideCancelOrderModal() { 
+            document.getElementById('cancelOrderModal').classList.remove('active'); 
+        }
 
         async function cancelOrderManually() {
             const orderId = document.getElementById('cancelOrderId').textContent;
             const reason = document.getElementById('cancelReason').value;
+            
             showLoading('Cancelling...');
+            
             try {
                 const res = await fetch(`/api/admin/orders/${orderId}/cancel`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ reason })
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     hideLoading(); 
@@ -646,7 +907,10 @@
                     hideLoading(); 
                     showError('Failed to cancel'); 
                 }
-            } catch { hideLoading(); showError('Network error'); }
+            } catch { 
+                hideLoading(); 
+                showError('Network error'); 
+            }
         }
 
         function showUploadModal() { 
@@ -663,24 +927,44 @@
             const fileInput = document.getElementById('accountFile');
             const dropArea = document.getElementById('fileDropArea');
             const uploadBtn = document.getElementById('uploadBtn');
+            
             const newDropArea = dropArea.cloneNode(true); 
             dropArea.parentNode.replaceChild(newDropArea, dropArea);
+            
             const newFileInput = fileInput.cloneNode(true); 
             fileInput.parentNode.replaceChild(newFileInput, fileInput);
+            
             const updatedFileInput = document.getElementById('accountFile');
             const updatedDropArea = document.getElementById('fileDropArea');
             const updatedFileInfo = document.getElementById('fileInfo');
 
             updatedDropArea.onclick = () => updatedFileInput.click();
-            updatedDropArea.ondragover = (e) => { e.preventDefault(); updatedDropArea.classList.add('dragover'); };
+            
+            updatedDropArea.ondragover = (e) => { 
+                e.preventDefault(); 
+                updatedDropArea.classList.add('dragover'); 
+            };
+            
             updatedDropArea.ondragleave = () => updatedDropArea.classList.remove('dragover');
-            updatedDropArea.ondrop = (e) => { e.preventDefault(); updatedDropArea.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); };
+            
+            updatedDropArea.ondrop = (e) => { 
+                e.preventDefault(); 
+                updatedDropArea.classList.remove('dragover'); 
+                handleFile(e.dataTransfer.files[0]); 
+            };
+            
             updatedFileInput.onchange = (e) => handleFile(e.target.files[0]);
 
             function handleFile(file) {
                 if (!file) return;
-                if (!file.name.endsWith('.json')) { showError('Please select a JSON file'); return; }
-                if (file.size > 5 * 1024 * 1024) { showError('File too large (max 5MB)'); return; }
+                if (!file.name.endsWith('.json')) { 
+                    showError('Please select a JSON file'); 
+                    return; 
+                }
+                if (file.size > 5 * 1024 * 1024) { 
+                    showError('File too large (max 5MB)'); 
+                    return; 
+                }
                 selectedFile = file;
                 document.getElementById('fileName').textContent = file.name;
                 document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
@@ -699,17 +983,36 @@
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const productId = document.getElementById('uploadProductId').value;
-            if (!selectedFile || !productId) { showError('Select product and file'); return; }
+            
+            if (!selectedFile || !productId) { 
+                showError('Select product and file'); 
+                return; 
+            }
+            
             showLoading('Uploading...');
+            
             try {
                 const text = await selectedFile.text();
                 const accounts = JSON.parse(text);
+                
+                if (!Array.isArray(accounts)) {
+                    throw new Error('Invalid JSON format');
+                }
+                
                 const res = await fetch('/api/admin/accounts/upload', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ productId, accounts })
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     hideLoading();
@@ -725,7 +1028,7 @@
                     hideLoading(); 
                     showError('Upload failed'); 
                 }
-            } catch { 
+            } catch (error) { 
                 hideLoading(); 
                 showError('Invalid JSON file'); 
             }
@@ -742,12 +1045,18 @@
 
         document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const productId = document.getElementById('addAccountProductId').value;
             const email = document.getElementById('addAccountEmail').value;
             const password = document.getElementById('addAccountPassword').value;
             const twofa = document.getElementById('addAccountTwofa').value;
             const additionalText = document.getElementById('addAccountAdditional').value;
-            if (!productId || !email || !password) { showError('Fill required fields'); return; }
+            
+            if (!productId || !email || !password) { 
+                showError('Fill required fields'); 
+                return; 
+            }
+            
             let additional = {};
             if (additionalText) { 
                 try { 
@@ -757,14 +1066,32 @@
                     return; 
                 } 
             }
+            
             showLoading('Adding...');
+            
             try {
                 const res = await fetch('/api/admin/accounts/upload', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ productId, accounts: [{ email, password, twofa: twofa || undefined, additional }] })
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ 
+                        productId, 
+                        accounts: [{ 
+                            email, 
+                            password, 
+                            twofa: twofa || undefined, 
+                            additional 
+                        }] 
+                    })
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     hideLoading();
@@ -791,14 +1118,24 @@
                 contactEmail: document.getElementById('contactEmail').value,
                 whatsappNumber: document.getElementById('whatsappNumber').value
             };
+            
             showLoading('Saving...');
+            
             try {
                 const res = await fetch('/api/admin/settings', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify(settings)
                 });
-                if (res.status === 401) { handleUnauthorized(); return; }
+                
+                if (res.status === 401) { 
+                    handleLogout('Session expired'); 
+                    return; 
+                }
+                
                 if (res.ok) {
                     const data = await res.json();
                     hideLoading();
@@ -815,7 +1152,10 @@
         }
 
         function showSection(section) {
-            ['dashboardSection','ordersSection','accountsSection','productsSection','settingsSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['dashboardSection','ordersSection','accountsSection','productsSection','settingsSection'].forEach(id => 
+                document.getElementById(id).classList.add('hidden')
+            );
+            
             if (section === 'dashboard') { 
                 document.getElementById('dashboardSection').classList.remove('hidden'); 
                 loadDashboardData(); 
@@ -834,8 +1174,11 @@
             if (section === 'settings') { 
                 document.getElementById('settingsSection').classList.remove('hidden'); 
             }
+            
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            const active = Array.from(document.querySelectorAll('.sidebar-link')).find(l => l.textContent.toLowerCase().includes(section));
+            const active = Array.from(document.querySelectorAll('.sidebar-link')).find(l => 
+                l.textContent.toLowerCase().includes(section)
+            );
             if (active) active.classList.add('active');
         }
 
@@ -845,14 +1188,27 @@
                 container.innerHTML = ''; 
                 return; 
             }
+            
             let html = '<div class="flex flex-wrap gap-2">';
-            if (pagination.page > 1) html += `<button onclick="${callback}(${pagination.page - 1})" class="btn-secondary px-3 py-2">«</button>`;
-            for (let i = 1; i <= pagination.pages; i++) {
-                if (i === pagination.page) html += `<span class="btn-primary px-3 py-2">${i}</span>`;
-                else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.pages) html += `<button onclick="${callback}(${i})" class="btn-secondary px-3 py-2">${i}</button>`;
-                else if (Math.abs(i - pagination.page) === 3) html += `<span class="btn-secondary px-3 py-2 opacity-50">...</span>`;
+            
+            if (pagination.page > 1) {
+                html += `<button onclick="${callback}(${pagination.page - 1})" class="btn-secondary px-3 py-2">«</button>`;
             }
-            if (pagination.page < pagination.pages) html += `<button onclick="${callback}(${pagination.page + 1})" class="btn-secondary px-3 py-2">»</button>`;
+            
+            for (let i = 1; i <= pagination.pages; i++) {
+                if (i === pagination.page) {
+                    html += `<span class="btn-primary px-3 py-2">${i}</span>`;
+                } else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.pages) {
+                    html += `<button onclick="${callback}(${i})" class="btn-secondary px-3 py-2">${i}</button>`;
+                } else if (Math.abs(i - pagination.page) === 3) {
+                    html += `<span class="btn-secondary px-3 py-2 opacity-50">...</span>`;
+                }
+            }
+            
+            if (pagination.page < pagination.pages) {
+                html += `<button onclick="${callback}(${pagination.page + 1})" class="btn-secondary px-3 py-2">»</button>`;
+            }
+            
             html += '</div>';
             container.innerHTML = html;
         }
@@ -884,16 +1240,28 @@
             if (refreshInterval) clearInterval(refreshInterval);
             localStorage.removeItem('adminToken'); 
             localStorage.removeItem('adminData'); 
+            localStorage.removeItem('loginTime');
             token = null;
-            location.reload(); 
+            showLoginScreen();
+            showToast('Logged out successfully');
         }
 
-        document.querySelectorAll('.modal-overlay').forEach(overlay => overlay.addEventListener('click', (e) => { 
-            if (e.target === overlay) overlay.classList.remove('active'); 
-        }));
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => { 
+                if (e.target === overlay) overlay.classList.remove('active'); 
+            });
+        });
 
         document.addEventListener('keydown', (e) => { 
-            if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active')); 
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active')); 
+            }
+        });
+
+        window.addEventListener('online', () => {
+            if (token && !document.getElementById('loginScreen').classList.contains('hidden')) {
+                verifyToken();
+            }
         });
     </script>
 </body>
