@@ -354,7 +354,7 @@ class WhatsAppBot {
             day: 'numeric' 
         });
         
-        const bannerUrl = 'https://shops.gtpsnet.my.id/img/banner.png';
+        const bannerUrl = 'https://shop.lyxtech.xyz/img/banner.png';
         
         let additionalInfoHtml = '';
         if (Object.keys(additional).length > 0) {
