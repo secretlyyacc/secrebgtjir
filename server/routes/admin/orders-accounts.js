@@ -140,8 +140,8 @@ router.post('/accounts/upload', authenticateToken, async (req, res) => {
             additional: acc.additional || {}
         })));
 
-        // Update product stock in roles.json
-        const rolesPath = path.join(__dirname, '../../../data/roles.json');
+        // Update product stock in product.json
+        const rolesPath = path.join(__dirname, '../../../data/product.json');
         if (fs.existsSync(rolesPath)) {
             try {
                 const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
@@ -153,7 +153,7 @@ router.post('/accounts/upload', authenticateToken, async (req, res) => {
                     console.log(`📊 Updated stock for ${productId}: ${stock}`);
                 }
             } catch (e) {
-                console.error('Error updating roles.json:', e);
+                console.error('Error updating product.json:', e);
             }
         }
 
@@ -256,9 +256,9 @@ router.delete('/accounts/:id', authenticateToken, async (req, res) => {
         // Delete the account
         await Account.delete(id);
 
-        // Update product stock in roles.json
+        // Update product stock in product.json
         if (account.product_id) {
-            const rolesPath = path.join(__dirname, '../../../data/roles.json');
+            const rolesPath = path.join(__dirname, '../../../data/product.json');
             if (fs.existsSync(rolesPath)) {
                 try {
                     const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
@@ -269,7 +269,7 @@ router.delete('/accounts/:id', authenticateToken, async (req, res) => {
                         fs.writeFileSync(rolesPath, JSON.stringify(rolesData, null, 2));
                     }
                 } catch (e) {
-                    console.error('Error updating roles.json:', e);
+                    console.error('Error updating product.json:', e);
                 }
             }
         }
@@ -342,15 +342,15 @@ router.get('/orders', authenticateToken, async (req, res) => {
             });
         });
 
-        // Load product names from roles.json
-        const rolesPath = path.join(__dirname, '../../../data/roles.json');
+        // Load product names from product.json
+        const rolesPath = path.join(__dirname, '../../../data/product.json');
         let roles = [];
         if (fs.existsSync(rolesPath)) {
             try {
                 const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
                 roles = rolesData.roles || [];
             } catch (e) {
-                console.error('Error reading roles.json:', e);
+                console.error('Error reading product.json:', e);
             }
         }
 
@@ -466,8 +466,8 @@ router.post('/orders/:orderId/complete', authenticateToken, async (req, res) => 
             );
         });
 
-        // Get product name from roles.json
-        const rolesPath = path.join(__dirname, '../../../data/roles.json');
+        // Get product name from product.json
+        const rolesPath = path.join(__dirname, '../../../data/product.json');
         let productName = order.role;
         if (fs.existsSync(rolesPath)) {
             try {
@@ -475,7 +475,7 @@ router.post('/orders/:orderId/complete', authenticateToken, async (req, res) => 
                 const role = (rolesData.roles || []).find(r => r.id === order.role);
                 if (role) productName = role.name;
             } catch (e) {
-                console.error('Error reading roles.json:', e);
+                console.error('Error reading product.json:', e);
             }
         }
 
@@ -495,7 +495,7 @@ router.post('/orders/:orderId/complete', authenticateToken, async (req, res) => 
             // Don't fail the order if email fails, just log it
         }
 
-        // Update role stock in roles.json
+        // Update role stock in product.json
         if (fs.existsSync(rolesPath)) {
             try {
                 const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
@@ -507,7 +507,7 @@ router.post('/orders/:orderId/complete', authenticateToken, async (req, res) => 
                     console.log(`📊 Updated stock for ${order.role}: ${stock}`);
                 }
             } catch (e) {
-                console.error('Error updating roles.json stock:', e);
+                console.error('Error updating product.json stock:', e);
             }
         }
 

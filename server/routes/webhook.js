@@ -12,7 +12,7 @@ const log = {
 };
 
 const ORDERS_PATH = path.join(__dirname, '../../data/orders.json');
-const ROLES_PATH = path.join(__dirname, '../../data/roles.json');
+const ROLES_PATH = path.join(__dirname, '../../data/product.json');
 const CONFIG_PATH = path.join(__dirname, '../../data/config.json');
 
 function readOrders() {

@@ -55,8 +55,8 @@ router.post('/create', async (req, res) => {
             });
         }
         
-        // Load products from roles.json
-        const rolesPath = path.join(__dirname, '../../data/roles.json');
+        // Load products from product.json
+        const rolesPath = path.join(__dirname, '../../data/product.json');
         let product = null;
         
         try {

@@ -6,7 +6,7 @@ const Admin = require('../models/Admin');
 const Order = require('../models/Order');
 const RedeemCode = require('../models/RedeemCode');
 const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
-const roles = require('../../data/roles.json');
+const roles = require('../../data/product.json');
 
 // Admin Login - FIXED VERSION
 router.post('/login', async (req, res) => {
@@ -222,13 +222,13 @@ router.post('/redeem-codes/add', authenticateToken, async (req, res) => {
             }
         }
         
-        // Update stock in roles.json
+        // Update stock in product.json
         if (addedCodes.length > 0) {
             const fs = require('fs').promises;
             const path = require('path');
             
             try {
-                const rolesPath = path.join(__dirname, '../../data/roles.json');
+                const rolesPath = path.join(__dirname, '../../data/product.json');
                 const data = await fs.readFile(rolesPath, 'utf8');
                 const rolesData = JSON.parse(data);
                 
@@ -265,7 +265,7 @@ router.put('/roles/:id', authenticateToken, async (req, res) => {
         const fs = require('fs').promises;
         const path = require('path');
         
-        const rolesPath = path.join(__dirname, '../../data/roles.json');
+        const rolesPath = path.join(__dirname, '../../data/product.json');
         const data = await fs.readFile(rolesPath, 'utf8');
         const rolesData = JSON.parse(data);
         

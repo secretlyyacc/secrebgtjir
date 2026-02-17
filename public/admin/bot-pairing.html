@@ -248,7 +248,7 @@ app.get('/scan.html', (req, res) => {
 // ========== API ENDPOINTS ==========
 app.get('/api/roles', (req, res) => {
     try {
-        const roles = require('./data/roles.json');
+        const roles = require('./data/product.json');
         res.json({ success: true, data: roles });
     } catch (error) {
         console.error('Error fetching roles:', error);

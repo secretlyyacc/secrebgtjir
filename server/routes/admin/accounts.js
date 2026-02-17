@@ -58,7 +58,7 @@ router.post('/upload', async (req, res) => {
             additional: acc.additional || {}
         })));
         
-        const rolesPath = path.join(__dirname, '../../../data/roles.json');
+        const rolesPath = path.join(__dirname, '../../../data/product.json');
         if (fs.existsSync(rolesPath)) {
             const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
             const productIndex = rolesData.roles.findIndex(r => r.id === productId);
@@ -99,7 +99,7 @@ router.delete('/:id', async (req, res) => {
         
         await Account.delete(id);
         
-        const rolesPath = path.join(__dirname, '../../../data/roles.json');
+        const rolesPath = path.join(__dirname, '../../../data/product.json');
         if (fs.existsSync(rolesPath) && account.product_id) {
             const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
             const productIndex = rolesData.roles.findIndex(r => r.id === account.product_id);

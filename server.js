@@ -182,7 +182,7 @@ app.post('/api/whatsapp/send-redeem', async (req, res) => {
             });
         }
         
-        const rolesPath = path.join(__dirname, 'data', 'roles.json');
+        const rolesPath = path.join(__dirname, 'data', 'product.json');
         let productName = 'Product';
         if (fs.existsSync(rolesPath)) {
             const roles = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
@@ -283,7 +283,7 @@ app.get('/admin', (req, res) => {
 
 app.get('/api/roles', (req, res) => {
     try {
-        const roles = require('./data/roles.json');
+        const roles = require('./data/product.json');
         res.json(roles);
     } catch (error) {
         console.error('Error fetching roles data', { error: error.message });
@@ -475,7 +475,7 @@ if (!fs.existsSync(pendingDir)) {
     log.info('✅ Created pending directory');
 }
 
-const rolesPath = path.join(dataDir, 'roles.json');
+const rolesPath = path.join(dataDir, 'product.json');
 if (!fs.existsSync(rolesPath)) {
     const defaultRoles = {
         roles: [
@@ -485,7 +485,7 @@ if (!fs.existsSync(rolesPath)) {
         ]
     };
     fs.writeFileSync(rolesPath, JSON.stringify(defaultRoles, null, 2));
-    log.info('✅ Created default roles.json');
+    log.info('✅ Created default product.json');
 }
 
 const ordersPath = path.join(dataDir, 'orders.json');
