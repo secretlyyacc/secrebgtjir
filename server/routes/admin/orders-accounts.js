@@ -1,36 +1,11 @@
 // server/routes/admin/orders-accounts.js
 const express = require('express');
 const router = express.Router();
+const { authenticateToken } = require('../../../middleware/auth');
 const { db, Account } = require('../../config/database');
 const whatsappBot = require('../../models/WhatsAppBot');
 const fs = require('fs');
 const path = require('path');
-
-// ==================== AUTH MIDDLEWARE ====================
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'growlyy-super-secret-key-2026';
-
-const authenticateToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ 
-            success: false, 
-            error: 'No token provided' 
-        });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.admin = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({ 
-            success: false, 
-            error: 'Invalid token' 
-        });
-    }
-};
 
 // ==================== ACCOUNTS ROUTES ====================
 
