@@ -1,0 +1,669 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
+
+// Import WhatsApp Bot
+const whatsappBot = require('./server/models/WhatsAppBot');
+console.log('🤖 WhatsApp Bot initialized');
+
+// Import database
+const db = require('./server/config/database');
+
+// Import routes
+const pendingRoutes = require('./server/routes/pending');
+const paymentRoutes = require('./server/routes/payment');
+const webhookRoutes = require('./server/routes/webhook');
+const adminRoutes = require('./server/routes/admin');
+const redeemUploadRoutes = require('./server/routes/redeem-upload');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ========== MIDDLEWARE ==========
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Logging middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+// ========== ROUTES ==========
+app.use('/api/payment', paymentRoutes);
+app.use('/api/webhook', webhookRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/pending', pendingRoutes);
+app.use('/api/admin/redeem-codes', redeemUploadRoutes);
+
+// ========== WHATSAPP BOT ROUTES ==========
+app.get('/api/bot/status', (req, res) => {
+    try {
+        const status = whatsappBot.getStatus();
+        res.json({
+            success: true,
+            ...status,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting bot status:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+app.get('/api/bot/qr', async (req, res) => {
+    try {
+        const qrCode = await whatsappBot.getQRCode();
+        
+        if (!qrCode) {
+            if (whatsappBot.isReady) {
+                return res.json({
+                    success: true,
+                    message: 'Bot is already connected and ready',
+                    isReady: true,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            return res.json({
+                success: false,
+                message: 'QR code not available yet. Please wait...',
+                isReady: false,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        res.json({
+            success: true,
+            qrCode: qrCode,
+            isReady: whatsappBot.isReady,
+            expiresIn: '5 minutes',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting QR code:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Route untuk halaman scanner QR
+app.get('/scan', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/scan.html'));
+});
+
+// API untuk halaman scanner
+app.get('/api/scanner', async (req, res) => {
+    try {
+        const qrCode = await whatsappBot.getQRCode();
+        
+        res.json({
+            success: true,
+            qrCode: qrCode,
+            isReady: whatsappBot.isReady,
+            status: whatsappBot.isReady ? 'connected' : qrCode ? 'waiting_for_scan' : 'loading'
+        });
+    } catch (error) {
+        console.error('Scanner API error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/bot/restart', (req, res) => {
+    try {
+        whatsappBot.restart();
+        res.json({ 
+            success: true, 
+            message: 'Bot restarting...',
+            timestamp: new Date().toISOString() 
+        });
+    } catch (error) {
+        console.error('Error restarting bot:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+app.post('/api/bot/send-test', async (req, res) => {
+    try {
+        const { phone, message } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Phone number required' 
+            });
+        }
+        
+        const result = await whatsappBot.sendMessage(
+            phone, 
+            message || '✅ Test message from LyyShop ID Bot\n' +
+                     `Time: ${new Date().toLocaleString('id-ID')}\n` +
+                     'Bot is working correctly! 🎉'
+        );
+        
+        res.json(result);
+    } catch (error) {
+        console.error('Error sending test message:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// ========== WHATSAPP REDEEM CODE ROUTE ==========
+app.post('/api/whatsapp/send-redeem', async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        
+        if (!orderId) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Order ID required' 
+            });
+        }
+        
+        const Order = require('./server/models/Order');
+        const order = await Order.findByOrderId(orderId);
+        
+        if (!order) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Order not found' 
+            });
+        }
+        
+        if (order.status !== 'completed' || !order.redeemCode) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Order not completed or no redeem code' 
+            });
+        }
+        
+        const orderData = {
+            orderId: order.orderId,
+            productName: order.role || 'Product',
+            amount: order.amount || 0,
+            redeemCode: order.redeemCode,
+            username: order.username,
+            status: order.status
+        };
+        
+        const result = await whatsappBot.sendRedeemCode(order.username, orderData);
+        
+        // Update database jika ada model Order
+        try {
+            await Order.update(order.orderId, { 
+                whatsappSent: 1,
+                whatsappSentAt: new Date().toISOString()
+            });
+        } catch (dbError) {
+            console.warn('Could not update database:', dbError.message);
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Redeem code sent via WhatsApp',
+            ...result 
+        });
+        
+    } catch (error) {
+        console.error('Error sending WhatsApp redeem:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// ========== WEB PAGES ==========
+app.get('/pending.html', (req, res) => {
+    res.redirect(`/pending/pending.html${req.query.order ? `?order=${req.query.order}` : ''}`);
+});
+
+app.get('/', (req, res) => {
+    logger.info('Serving home page');
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/scan.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/scan.html'));
+});
+
+// ========== API ENDPOINTS ==========
+app.get('/api/roles', (req, res) => {
+    try {
+        const roles = require('./data/roles.json');
+        res.json({ success: true, data: roles });
+    } catch (error) {
+        console.error('Error fetching roles:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch roles' });
+    }
+});
+
+app.get('/api/order/:orderId', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const Order = require('./server/models/Order');
+        const order = await Order.findByOrderId(orderId);
+        
+        if (!order) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
+        }
+        
+        res.json({ success: true, order });
+    } catch (error) {
+        console.error('Error fetching order:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        whatsappBot: whatsappBot.isReady ? 'connected' : 'disconnected',
+        memory: process.memoryUsage(),
+        platform: process.platform
+    });
+});
+
+app.get('/api/stats', async (req, res) => {
+    try {
+        const Order = require('./server/models/Order');
+        const totalOrders = await Order.count({});
+        const completedOrders = await Order.count({ status: 'completed' });
+        
+        const stats = {
+            orders: {
+                total: totalOrders,
+                completed: completedOrders,
+                pending: await Order.count({ status: 'pending' })
+            },
+            whatsapp: {
+                connected: whatsappBot.isReady,
+                phoneNumber: whatsappBot.client?.info?.wid?.user || 'Not connected'
+            },
+            system: {
+                uptime: process.uptime(),
+                nodeVersion: process.version
+            }
+        };
+        
+        res.json({ success: true, stats });
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch statistics' });
+    }
+});
+
+// ========== ERROR HANDLERS ==========
+app.use((req, res) => {
+    res.status(404).json({ 
+        success: false, 
+        error: 'Route not found',
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.use((error, req, res, next) => {
+    console.error('Unhandled error:', error);
+    res.status(500).json({
+        success: false,
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+});
+
+// ========== CREATE SCANNER HTML ==========
+const publicDir = path.join(__dirname, 'public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+}
+
+// Buat file scan.html
+const scanHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp QR Scanner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .qr-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px dashed #dee2e6;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #qrcode {
+            margin: 20px 0;
+        }
+        #qrcode img {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: none;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 14px;
+            color: #004085;
+            border-left: 4px solid #007bff;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .button {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 5px;
+            min-width: 150px;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .button:active {
+            transform: translateY(0);
+        }
+        .button.secondary {
+            background: #6c757d;
+        }
+        .button.secondary:hover {
+            background: #5a6268;
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.3);
+        }
+        .refresh-info {
+            color: #6c757d;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+        .bot-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #495057;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 WhatsApp QR Scanner</h1>
+        <p class="subtitle">Scan kode QR ini untuk menghubungkan bot WhatsApp</p>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="qr-container">
+            <div id="qrcode"></div>
+            <p id="qrMessage">Mengambil QR Code...</p>
+        </div>
+        
+        <div class="instructions">
+            <strong>📋 Cara Scan:</strong>
+            <ol>
+                <li>Buka WhatsApp di HP Anda</li>
+                <li>Tap menu titik tiga (⋮) → Linked Devices</li>
+                <li>Tap "Link a Device"</li>
+                <li>Arahkan kamera ke QR Code di atas</li>
+                <li>Tunggu hingga terhubung (status berubah menjadi hijau)</li>
+            </ol>
+        </div>
+        
+        <div class="bot-info" id="botInfo"></div>
+        
+        <div style="margin-top: 25px;">
+            <button class="button" onclick="refreshQR()">🔄 Refresh QR</button>
+            <button class="button secondary" onclick="checkStatus()">📡 Check Status</button>
+            <a href="/" class="button secondary">🏠 Home</a>
+        </div>
+        
+        <p class="refresh-info">QR Code akan otomatis refresh setiap 5 detik</p>
+    </div>
+
+    <script>
+        let refreshInterval;
+        let currentQR = null;
+        
+        function updateStatus(status, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status ' + status;
+            statusEl.innerHTML = message;
+        }
+        
+        function updateQRCode(qrData) {
+            if (!qrData || qrData === currentQR) return;
+            
+            currentQR = qrData;
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            
+            QRCode.toCanvas(qrData, { 
+                width: 250,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            }, function (err, canvas) {
+                if (err) {
+                    console.error('Error generating QR:', err);
+                    return;
+                }
+                qrcodeDiv.appendChild(canvas);
+                document.getElementById('qrMessage').textContent = 'Scan QR Code di atas dengan WhatsApp';
+            });
+        }
+        
+        async function fetchQRCode() {
+            try {
+                const response = await fetch('/api/bot/qr');
+                const data = await response.json();
+                
+                if (data.success && data.qrCode) {
+                    updateQRCode(data.qrCode);
+                    updateStatus('disconnected', '⏳ Menunggu scan... QR Code siap untuk discan');
+                    updateBotInfo('QR Code tersedia. Silakan scan dengan WhatsApp.');
+                } else if (data.isReady) {
+                    updateStatus('connected', '✅ WhatsApp Bot sudah terhubung dan siap digunakan!');
+                    updateBotInfo('Bot aktif dan siap mengirim pesan.');
+                    document.getElementById('qrMessage').textContent = 'Bot sudah terhubung';
+                    document.getElementById('qrcode').innerHTML = '<div style="font-size: 50px;">✅</div>';
+                } else {
+                    updateStatus('loading', '🔄 Memuat QR Code...');
+                    updateBotInfo('Sedang mempersiapkan QR Code...');
+                }
+            } catch (error) {
+                console.error('Error fetching QR:', error);
+                updateStatus('disconnected', '❌ Gagal memuat QR Code. Coba refresh halaman.');
+                updateBotInfo('Error: ' + error.message);
+            }
+        }
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/bot/status');
+                const data = await response.json();
+                
+                if (data.isReady) {
+                    updateStatus('connected', '✅ WhatsApp Bot terhubung sebagai: ' + (data.phoneNumber || 'Unknown'));
+                    updateBotInfo('Bot aktif dan siap mengirim pesan otomatis.');
+                    clearInterval(refreshInterval);
+                } else {
+                    updateStatus('disconnected', '❌ Bot belum terhubung. Silakan scan QR Code.');
+                    startAutoRefresh();
+                }
+            } catch (error) {
+                console.error('Error checking status:', error);
+            }
+        }
+        
+        function updateBotInfo(info) {
+            document.getElementById('botInfo').textContent = info;
+        }
+        
+        function refreshQR() {
+            currentQR = null;
+            fetchQRCode();
+            updateStatus('loading', '🔄 Memuat ulang QR Code...');
+        }
+        
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(fetchQRCode, 5000); // Refresh setiap 5 detik
+        }
+        
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchQRCode();
+            checkStatus();
+            startAutoRefresh();
+        });
+    </script>
+</body>
+</html>
+`;
+
+fs.writeFileSync(path.join(publicDir, 'scan.html'), scanHTML);
+
+// ========== START SERVER ==========
+const startServer = async () => {
+    try {
+        console.log('🚀 Starting GTPS WhatsApp Bot Server...');
+        console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`📡 Port: ${PORT}`);
+        console.log(`🤖 WhatsApp Bot: ${whatsappBot.isReady ? '✅ READY' : '⏳ WAITING FOR QR SCAN'}`);
+        
+        if (whatsappBot.isReady) {
+            const status = whatsappBot.getStatus();
+            console.log(`📱 Connected as: ${status.phoneNumber || 'Unknown'}`);
+        } else {
+            console.log(`🔗 Scan QR at: http://localhost:${PORT}/scan`);
+            console.log(`🔗 API QR: http://localhost:${PORT}/api/bot/qr`);
+        }
+        
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`✅ Server running on http://localhost:${PORT}`);
+            console.log('📊 Available endpoints:');
+            console.log(`   - http://localhost:${PORT}/ (Home)`);
+            console.log(`   - http://localhost:${PORT}/scan (QR Scanner)`);
+            console.log(`   - http://localhost:${PORT}/admin (Admin Panel)`);
+            console.log(`   - http://localhost:${PORT}/api/bot/qr (QR API)`);
+            console.log(`   - http://localhost:${PORT}/health (Health Check)`);
+            console.log('🔧 Server ready to receive requests!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();

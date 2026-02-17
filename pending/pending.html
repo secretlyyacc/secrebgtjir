@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Status - LyyShop ID</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+            <div class="text-6xl mb-4">⏳</div>
+            <h1 class="text-2xl font-bold mb-4">Payment Pending</h1>
+            <p class="text-gray-600 mb-2">Order ID: <span id="orderId">ORDER_ID_PLACEHOLDER</span></p>
+            <p class="text-gray-600 mb-6">Your payment is being processed.</p>
+            
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 text-left">
+                <p class="font-bold">📱 Payment Instructions:</p>
+                <p class="text-sm mt-2">1. Complete the payment using QRIS or Virtual Account</p>
+                <p class="text-sm">2. Wait for confirmation (usually 1-2 minutes)</p>
+                <p class="text-sm">3. Redeem code will be sent via email</p>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="checkStatus()" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    🔄 Check Status
+                </button>
+                <a href="/" class="block w-full bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    🏠 Back to Home
+                </a>
+            </div>
+            
+            <div id="statusMessage" class="mt-4 text-sm text-gray-600"></div>
+        </div>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order') || 'ORDER_ID_PLACEHOLDER';
+        document.getElementById('orderId').textContent = orderId;
+        
+        async function checkStatus() {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = 'Checking status...';
+            
+            try {
+                const response = await fetch('/api/order/' + orderId);
+                const data = await response.json();
+                
+                if (data.success && data.order) {
+                    if (data.order.status === 'completed') {
+                        statusDiv.innerHTML = '✅ Payment completed! Check your email for redeem code.';
+                        statusDiv.className = 'mt-4 text-sm text-green-600 font-bold';
+                    } else if (data.order.status === 'pending') {
+                        statusDiv.innerHTML = '⏳ Payment still pending. Please complete your payment.';
+                        statusDiv.className = 'mt-4 text-sm text-yellow-600';
+                    } else {
+                        statusDiv.innerHTML = 'Status: ' + data.order.status;
+                        statusDiv.className = 'mt-4 text-sm text-gray-600';
+                    }
+                } else {
+                    statusDiv.innerHTML = '❌ Order not found';
+                    statusDiv.className = 'mt-4 text-sm text-red-600';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Error checking status';
+                statusDiv.className = 'mt-4 text-sm text-red-600';
+            }
+        }
+        
+        setTimeout(checkStatus, 3000);
+        setInterval(checkStatus, 10000);
+    </script>
+</body>
+</html>

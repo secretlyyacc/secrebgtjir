@@ -1,0 +1,139 @@
+<!-- public/admin/bot.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp Bot Scanner</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .qr-container { margin: 20px 0; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px; }
+        .ready { background: #d4edda; color: #155724; }
+        .not-ready { background: #f8d7da; color: #721c24; }
+        .loading { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 WhatsApp Bot Scanner</h1>
+        
+        <div id="status" class="status loading">
+            Checking bot status...
+        </div>
+        
+        <div class="qr-container" id="qrContainer" style="display: none;">
+            <h3>Scan QR Code ini:</h3>
+            <img id="qrImage" src="" alt="QR Code">
+            <p>1. Buka WhatsApp di HP</p>
+            <p>2. Tap menu → Linked Devices → Link a Device</p>
+            <p>3. Scan QR di atas</p>
+        </div>
+        
+        <div id="readyMessage" style="display: none;">
+            <h2 style="color: green;">✅ Bot Ready!</h2>
+            <p>Connected as: <span id="phoneNumber"></span></p>
+        </div>
+        
+        <button onclick="checkStatus()" style="margin: 10px;">Refresh Status</button>
+        <button onclick="restartBot()" style="margin: 10px;">Restart Bot</button>
+    </div>
+    
+   <script>
+    const API_BASE = '/api/bot'; // Sesuaikan dengan endpoint di server.js
+    
+    async function checkStatus() {
+        const statusDiv = document.getElementById('status');
+        statusDiv.className = 'status loading';
+        statusDiv.textContent = 'Checking bot status...';
+        
+        try {
+            // Cek status bot
+            const statusResponse = await fetch(`${API_BASE}/status`);
+            const statusData = await statusResponse.json();
+            
+            if (statusData.isReady) {
+                // Bot sudah connected
+                statusDiv.className = 'status ready';
+                statusDiv.textContent = '✅ WhatsApp Bot is connected and ready!';
+                document.getElementById('qrContainer').style.display = 'none';
+                document.getElementById('readyMessage').style.display = 'block';
+                
+                if (statusData.phoneNumber) {
+                    document.getElementById('phoneNumber').textContent = statusData.phoneNumber;
+                }
+            } else {
+                // Bot belum connected, tampilkan QR
+                statusDiv.className = 'status not-ready';
+                statusDiv.textContent = '⚠️ WhatsApp Bot not connected. Please scan QR code below.';
+                
+                // Ambil QR code
+                const qrResponse = await fetch(`${API_BASE}/qr`);
+                const qrData = await qrResponse.json();
+                
+                if (qrData.success && qrData.qrCode) {
+                    document.getElementById('qrImage').src = qrData.qrCode;
+                    document.getElementById('qrContainer').style.display = 'block';
+                } else {
+                    statusDiv.textContent = qrData.message || 'Waiting for QR code...';
+                }
+                
+                document.getElementById('readyMessage').style.display = 'none';
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            statusDiv.className = 'status not-ready';
+            statusDiv.textContent = '❌ Error connecting to server: ' + error.message;
+        }
+    }
+    
+    async function restartBot() {
+        if (confirm('Restart WhatsApp bot? This will temporarily disconnect the bot.')) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = 'Restarting bot...';
+            
+            try {
+                await fetch(`${API_BASE}/restart`, { 
+                    method: 'POST' 
+                });
+                
+                setTimeout(() => {
+                    statusDiv.textContent = 'Bot restarting... Please wait 10 seconds';
+                    setTimeout(checkStatus, 10000); // Cek status setelah 10 detik
+                }, 1000);
+                
+            } catch (error) {
+                statusDiv.className = 'status not-ready';
+                statusDiv.textContent = 'Error restarting bot: ' + error.message;
+            }
+        }
+    }
+    
+    // Auto-refresh QR setiap 30 detik jika belum connected
+    let refreshInterval;
+    
+    function startAutoRefresh() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        
+        refreshInterval = setInterval(() => {
+            const statusDiv = document.getElementById('status');
+            if (!statusDiv.classList.contains('ready')) {
+                console.log('Auto-refreshing QR code...');
+                checkStatus();
+            }
+        }, 30000); // Refresh setiap 30 detik
+    }
+    
+    // Initial check
+    checkStatus();
+    startAutoRefresh();
+    
+    // Stop auto-refresh jika sudah connected
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+</script>

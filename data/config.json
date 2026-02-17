@@ -1,0 +1,24 @@
+{
+    "whatsapp": {
+    "adminNumber": "6282118028950",
+    "autoSend": true,
+    "greetingMessage": "Halo! Saya bot WhatsApp untuk LyyShop ID. Kode redeem akan dikirim otomatis setelah pembayaran.",
+    "retryAttempts": 3,
+    "promoGroupLink": "https://chat.whatsapp.com/..."
+   },
+    "pakasir": {
+        "api_key": "uuj5Pc69gr3L5xdwPZXBJi7ZoWW94LaJ",
+        "slug": "gtlyy-payment",
+        "webhook_secret": "your_super_secret_jwt_key_2026_GrowLyy"
+    },
+    "server": {
+        "port": 3000,
+        "admin_username": "admin",
+        "admin_password": "GrowLyy2026"
+    },
+    "redeem_code": {
+        "prefix": "GrowLyy",
+        "length": 12,
+        "expiry_days": 30
+    }
+}

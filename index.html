@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Primary Meta Tags -->
+    <title>LyyShop ID - Toko Game Digital Termurah & Terpercaya | Akun Premium</title>
+    <meta name="title" content="LyyShop ID - Toko Game Digital Termurah & Terpercaya">
+    <meta name="description" content="LyyShop ID adalah toko game digital terpercaya. Tersedia berbagai akun game premium dengan harga termurah, proses instan, dan garansi 100%.">
+    <meta name="keywords" content="akun game, beli akun game, akun genshin impact, akun mobile legends, akun valorant, akun steam, top up game, voucher game">
+    <meta name="author" content="LyyTechID">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="revisit-after" content="7 days">
+    <meta name="language" content="Indonesian">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shop.lyxtech.xyz/">
+    <meta property="og:title" content="LyyShop ID - Toko Game Digital Termurah">
+    <meta property="og:description" content="Toko game digital terpercaya dengan ribuan akun premium siap kirim. Proses cepat & garansi 100%.">
+    <meta property="og:image" content="https://shop.lyxtech.xyz/img/banner.png">
+    <meta property="og:site_name" content="LyyShop ID">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://shop.lyxtech.xyz/">
+    <meta property="twitter:title" content="LyyShop ID - Toko Game Digital Termurah">
+    <meta property="twitter:description" content="Toko game digital terpercaya dengan ribuan akun premium siap kirim. Proses cepat & garansi 100%.">
+    <meta property="twitter:image" content="https://shop.lyxtech.xyz/img/banner.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://shop.lyxtech.xyz">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+    
+    <!-- Schema.org markup for Google -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "LyyShop ID",
+        "url": "https://shop.lyxtech.xyz",
+        "logo": "https://shop.lyxtech.xyz/img/logo.png",
+        "image": "https://shop.lyxtech.xyz/img/banner.png",
+        "description": "Toko game digital terpercaya dengan ribuan akun premium siap kirim. Proses cepat & garansi 100%.",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "ID"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "telephone": "+6281234567890",
+            "email": "support@lyxtech.xyz",
+            "availableLanguage": "Indonesian"
+        },
+        "sameAs": [
+            "https://www.instagram.com/lyytechid",
+            "https://www.tiktok.com/@lyytechid",
+            "https://wa.me/6281234567890"
+        ],
+        "priceRange": "Rp"
+    }
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-60: #0a2647;      /* Dark Blue - 60% Dominant */
+            --primary-30: #1e3a8a;      /* Medium Blue - 30% */
+            --primary-10: #60a5fa;      /* Light Blue - 10% Accent */
+            --accent-gold: #fbbf24;     /* Gold Accent */
+            --text-light: #f8fafc;
+            --text-dark: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-60) 0%, #0f2b4f 100%);
+            min-height: 100vh;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-10), var(--primary-30));
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
+        }
+
+        /* Banner Styles */
+        .banner-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .banner-container:hover .banner-image {
+            transform: scale(1.05);
+        }
+
+        .banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--primary-60) 0%, transparent 50%, var(--primary-60) 100%);
+            opacity: 0.3;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(10, 38, 71, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary-10);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Product Card Styles */
+        .product-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-10);
+            box-shadow: 0 20px 40px rgba(96, 165, 250, 0.2);
+        }
+
+        .product-card:hover::before {
+            left: 100%;
+        }
+
+        .product-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover .product-icon {
+            transform: rotate(5deg) scale(1.1);
+            box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .product-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-10), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .product-stock {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid var(--primary-10);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--primary-10);
+            margin-bottom: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-10);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-10);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--primary-60), #0f2b4f);
+            border: 1px solid var(--primary-10);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 450px;
+            width: 90%;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-10);
+            transform: rotate(90deg);
+        }
+
+        /* Form Styles */
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-10);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-select option {
+            background: var(--primary-60);
+            color: white;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(10, 38, 71, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--primary-10);
+            border-radius: 12px;
+            padding: 16px 24px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary-10);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(10, 38, 71, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(96, 165, 250, 0.2);
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.6);
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary-10);
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid var(--primary-10);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--primary-10);
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .banner-container {
+                height: 200px;
+            }
+            
+            .product-card {
+                padding: 16px;
+            }
+            
+            .product-price {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <img src="/img/logo.png" alt="LyyShop ID Logo" class="w-12 h-12 rounded-xl">
+                <span class="text-2xl font-bold hidden sm:block">LyyTech<span class="text-[#60a5fa]">ID</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#home" class="nav-link text-white font-medium">Home</a>
+                <a href="#products" class="nav-link text-white font-medium">Products</a>
+                <a href="#categories" class="nav-link text-white font-medium">Categories</a>
+                <a href="#testimonials" class="nav-link text-white font-medium">Testimonials</a>
+            </div>
+            
+            <a href="https://wa.me/6281234567890" target="_blank" class="btn-primary flex items-center gap-2">
+                <i class="fab fa-whatsapp"></i>
+                <span class="hidden sm:inline">Contact</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+        <!-- Banner Section -->
+        <section id="home" class="mb-16">
+            <div class="banner-container">
+                <img src="/img/banner.png" alt="LyyShop ID Banner" class="banner-image">
+                <div class="banner-overlay"></div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-[#60a5fa] to-[#fbbf24] bg-clip-text text-transparent">
+                    Premium Game Accounts
+                </h1>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Dapatkan akun game premium dengan harga termurah, proses instan, dan garansi 100%!
+                </p>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            <div class="product-card text-center">
+                <div class="product-icon mx-auto">
+                    <i class="fas fa-users text-3xl text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-[#60a5fa]">10K+</div>
+                <div class="text-gray-400">Happy Customers</div>
+            </div>
+            
+            <div class="product-card text-center">
+                <div class="product-icon mx-auto">
+                    <i class="fas fa-gamepad text-3xl text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-[#60a5fa]">5K+</div>
+                <div class="text-gray-400">Accounts Sold</div>
+            </div>
+            
+            <div class="product-card text-center">
+                <div class="product-icon mx-auto">
+                    <i class="fas fa-bolt text-3xl text-white"></i>
+                </div>
+                <div class="text-3xl font-bold text-[#60a5fa]">Instant</div>
+                <div class="text-gray-400">Delivery</div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="mb-16">
+            <h2 class="text-4xl font-bold text-center mb-12">
+                Our <span class="text-[#60a5fa]">Products</span>
+            </h2>
+            
+            <!-- Loading State -->
+            <div id="loadingContainer" class="flex justify-center mb-8 hidden">
+                <div class="spinner"></div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div id="productContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Products will be loaded here via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <div class="text-center p-6">
+                <div class="w-16 h-16 mx-auto mb-4 bg-[#1e3a8a] rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-3xl text-[#60a5fa]"></i>
+                </div>
+                <h3 class="font-bold mb-2">100% Secure</h3>
+                <p class="text-gray-400 text-sm">All accounts are verified and guaranteed</p>
+            </div>
+            
+            <div class="text-center p-6">
+                <div class="w-16 h-16 mx-auto mb-4 bg-[#1e3a8a] rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-bolt text-3xl text-[#60a5fa]"></i>
+                </div>
+                <h3 class="font-bold mb-2">Instant Delivery</h3>
+                <p class="text-gray-400 text-sm">Receive account details immediately after payment</p>
+            </div>
+            
+            <div class="text-center p-6">
+                <div class="w-16 h-16 mx-auto mb-4 bg-[#1e3a8a] rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-headset text-3xl text-[#60a5fa]"></i>
+                </div>
+                <h3 class="font-bold mb-2">24/7 Support</h3>
+                <p class="text-gray-400 text-sm">Our team is always ready to help you</p>
+            </div>
+            
+            <div class="text-center p-6">
+                <div class="w-16 h-16 mx-auto mb-4 bg-[#1e3a8a] rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-money-bill-wave text-3xl text-[#60a5fa]"></i>
+                </div>
+                <h3 class="font-bold mb-2">Best Price</h3>
+                <p class="text-gray-400 text-sm">Competitive prices with regular promotions</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <img src="/img/logo.png" alt="LyyTechID" class="w-10 h-10">
+                        <span class="text-xl font-bold">LyyTech<span class="text-[#60a5fa]">ID</span></span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4">
+                        Toko game digital terpercaya dengan ribuan akun premium siap kirim.
+                    </p>
+                    <div class="flex gap-3">
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Categories</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="footer-link">Genshin Impact</a></li>
+                        <li><a href="#" class="footer-link">Mobile Legends</a></li>
+                        <li><a href="#" class="footer-link">Valorant</a></li>
+                        <li><a href="#" class="footer-link">Steam Accounts</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Contact</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-envelope text-[#60a5fa]"></i>
+                            <span class="footer-link">support@lyxtech.xyz</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-phone text-[#60a5fa]"></i>
+                            <span class="footer-link">+62 812 3456 7890</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-map-marker-alt text-[#60a5fa]"></i>
+                            <span class="footer-link">Jakarta, Indonesia</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-[#1e3a8a] pt-6 text-center text-gray-500 text-sm">
+                <p>&copy; 2026 LyyShop ID. All rights reserved. | Designed with <i class="fas fa-heart text-[#60a5fa]"></i> for gamers</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="modal-overlay">
+        <div class="modal-content relative">
+            <span class="modal-close" onclick="closeCheckoutModal()">&times;</span>
+            
+            <h2 class="text-2xl font-bold mb-6">Checkout</h2>
+            <p id="selectedProductName" class="text-lg mb-4 text-[#60a5fa]"></p>
+            
+            <form id="checkoutForm" class="space-y-4">
+                <input 
+                    type="email"
+                    id="customerEmail"
+                    placeholder="Your Email Address"
+                    required
+                    class="form-input"
+                >
+                
+                <select id="paymentMethod" class="form-select" required>
+                    <option value="">Select Payment Method</option>
+                </select>
+                
+                <button type="submit" id="payButton" class="btn-primary w-full">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Continue to Payment
+                </button>
+            </form>
+            
+            <div id="paymentInfo" class="hidden mt-6 p-4 bg-[#1e3a8a] rounded-xl">
+                <p id="paymentDetails" class="text-sm mb-3"></p>
+                <div class="flex gap-3">
+                    <a href="#" id="paymentLink" target="_blank" class="flex-1 btn-primary text-center">
+                        Open Payment
+                    </a>
+                    <button id="checkStatus" class="flex-1 btn-secondary">
+                        Check Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-content text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-2xl font-bold mb-4">Payment Successful!</h2>
+            <p class="mb-4 text-gray-300">Your account details have been sent to:</p>
+            <p id="successEmail" class="text-[#60a5fa] font-bold mb-6"></p>
+            
+            <div class="bg-[#1e3a8a] p-4 rounded-xl mb-6">
+                <p class="text-sm text-gray-300 mb-2">Check your email inbox (or spam folder)</p>
+                <i class="fas fa-envelope-open-text text-3xl text-[#60a5fa]"></i>
+            </div>
+            
+            <button onclick="closeSuccessModal()" class="btn-primary w-full">
+                Got It
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script>
+        let currentProduct = null;
+        let currentOrderId = null;
+        let statusChecker = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            loadPaymentMethods();
+        });
+
+        // Load products
+        async function loadProducts() {
+            try {
+                showLoading(true);
+                const res = await fetch('/api/roles');
+                if (!res.ok) throw new Error('Failed to load products');
+                
+                const data = await res.json();
+                displayProducts(data.roles || []);
+            } catch (error) {
+                showToast('Failed to load products', 'error');
+                console.error('Error loading products:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display products
+        function displayProducts(products) {
+            const container = document.getElementById('productContainer');
+            if (!products || products.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400">No products available</p>';
+                return;
+            }
+
+            container.innerHTML = products.map(product => {
+                const price = Number(product.price) || 0;
+                const stock = Number(product.stock) || 0;
+                const isOutOfStock = stock <= 0;
+
+                return `
+                    <div class="product-card">
+                        <div class="product-icon">
+                            <i class="fas fa-crown text-3xl text-white"></i>
+                        </div>
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-price">Rp ${price.toLocaleString('id-ID')}</div>
+                        <div class="product-stock">
+                            <i class="fas fa-box mr-1"></i> Stock: ${stock}
+                        </div>
+                        <p class="text-gray-400 text-sm mb-6">${product.description || 'Premium account with full features'}</p>
+                        <button 
+                            onclick="openCheckout('${product.id}','${product.name}',${price})"
+                            class="btn-primary w-full ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}"
+                            ${isOutOfStock ? 'disabled' : ''}>
+                            ${isOutOfStock ? 'Out of Stock' : 'Buy Now'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load payment methods
+        async function loadPaymentMethods() {
+            try {
+                const res = await fetch('/api/payment/methods');
+                const data = await res.json();
+                const select = document.getElementById('paymentMethod');
+                
+                select.innerHTML = '<option value="">Select Payment Method</option>';
+                (data.methods || []).forEach(m => {
+                    select.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading payment methods:', error);
+            }
+        }
+
+        // Open checkout modal
+        function openCheckout(id, name, price) {
+            currentProduct = { id, name, price };
+            document.getElementById('selectedProductName').textContent = `${name} - Rp ${price.toLocaleString('id-ID')}`;
+            document.getElementById('checkoutModal').classList.add('active');
+            document.getElementById('paymentInfo').classList.add('hidden');
+            document.getElementById('customerEmail').value = '';
+        }
+
+        // Close checkout modal
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.remove('active');
+            if (statusChecker) clearInterval(statusChecker);
+        }
+
+        // Handle checkout form
+        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('customerEmail').value.trim();
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                showToast('Please enter a valid email address', 'error');
+                return;
+            }
+
+            if (!paymentMethod) {
+                showToast('Please select payment method', 'error');
+                return;
+            }
+
+            const payButton = document.getElementById('payButton');
+            payButton.disabled = true;
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+
+            try {
+                const res = await fetch('/api/payment/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: email,
+                        roleId: currentProduct.id,
+                        paymentMethod
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    currentOrderId = data.orderId;
+                    
+                    document.getElementById('paymentInfo').classList.remove('hidden');
+                    
+                    const paymentLink = data.redirectUrl || data.payment?.url;
+                    if (paymentLink) {
+                        document.getElementById('paymentLink').href = paymentLink;
+                    } else {
+                        document.getElementById('paymentLink').style.display = 'none';
+                    }
+
+                    document.getElementById('paymentDetails').innerHTML = `
+                        <strong>Order ID:</strong> ${data.orderId}<br>
+                        <strong>Total:</strong> Rp ${data.amount?.toLocaleString('id-ID')}<br>
+                        <strong>Method:</strong> ${data.payment?.type || paymentMethod}
+                    `;
+
+                    startStatusCheck(data.orderId);
+                    showToast('Payment created successfully', 'success');
+                } else {
+                    showToast(data.error || 'Failed to create payment', 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+                console.error('Payment error:', error);
+            } finally {
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i> Continue to Payment';
+            }
+        });
+
+        // Check payment status
+        function startStatusCheck(orderId) {
+            if (statusChecker) clearInterval(statusChecker);
+
+            statusChecker = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/order/' + orderId);
+                    const data = await res.json();
+
+                    if (data.order?.status === 'completed') {
+                        clearInterval(statusChecker);
+                        
+                        closeCheckoutModal();
+                        
+                        document.getElementById('successEmail').textContent = data.order.username;
+                        document.getElementById('successModal').classList.add('active');
+                        
+                        showToast('Payment successful!', 'success');
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            }, 5000);
+        }
+
+        // Check status manually
+        document.getElementById('checkStatus').addEventListener('click', async () => {
+            if (!currentOrderId) return;
+            
+            try {
+                const res = await fetch('/api/order/' + currentOrderId);
+                const data = await res.json();
+
+                if (data.order?.status === 'completed') {
+                    clearInterval(statusChecker);
+                    closeCheckoutModal();
+                    document.getElementById('successEmail').textContent = data.order.username;
+                    document.getElementById('successModal').classList.add('active');
+                } else {
+                    showToast(`Status: ${data.order?.status || 'PENDING'}`, 'info');
+                }
+            } catch (error) {
+                showToast('Failed to check status', 'error');
+            }
+        });
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+            location.reload();
+        }
+
+        // Show loading
+        function showLoading(show) {
+            document.getElementById('loadingContainer').classList.toggle('hidden', !show);
+        }
+
+        // Show toast
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${
+                type === 'error' ? 'bg-red-600' : 
+                type === 'success' ? 'bg-green-600' : 
+                'bg-blue-600'
+            }`;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                    if (overlay.id === 'checkoutModal' && statusChecker) {
+                        clearInterval(statusChecker);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

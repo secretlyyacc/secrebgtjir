@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyyShop ID - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-60: #0a2647;
+            --primary-30: #1e3a8a;
+            --primary-10: #60a5fa;
+            --accent-gold: #fbbf24;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-60) 0%, #0f2b4f 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--primary-10), var(--primary-30)); border-radius: 10px; }
+
+        /* Glassmorphism */
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: var(--primary-10); box-shadow: 0 10px 30px rgba(96,165,250,0.2); transform: translateY(-2px); }
+
+        /* Animations */
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .animate-slideIn { animation: slideIn 0.3s ease; }
+        .animate-fadeIn { animation: fadeIn 0.3s ease; }
+        .animate-pulse { animation: pulse 2s infinite; }
+        .animate-scaleIn { animation: scaleIn 0.3s ease; }
+        .animate-slideUp { animation: slideUp 0.3s ease; }
+
+        /* Buttons */
+        .btn-primary { background: linear-gradient(135deg, var(--primary-30), var(--primary-10)); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; transition: all 0.3s ease; border: none; cursor: pointer; position: relative; overflow: hidden; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(96,165,250,0.3); }
+        .btn-primary::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s ease; }
+        .btn-primary:hover::after { left: 100%; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-secondary { background: rgba(255,255,255,0.1); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: var(--primary-10); transform: translateY(-2px); }
+
+        .btn-danger { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; transition: all 0.3s ease; border: none; cursor: pointer; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(220,38,38,0.3); }
+
+        /* Status Badges */
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-block; transition: all 0.3s ease; }
+        .badge-pending { background: var(--warning); color: white; }
+        .badge-paid { background: var(--primary-10); color: white; }
+        .badge-completed { background: var(--success); color: white; }
+        .badge-cancelled { background: var(--danger); color: white; }
+
+        /* Tables */
+        .table-header { padding: 12px 16px; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .table-cell { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .table-row { transition: all 0.2s ease; cursor: pointer; }
+        .table-row:hover { background: rgba(96,165,250,0.1); transform: scale(1.01); }
+
+        /* Forms */
+        .form-input { width: 100%; padding: 10px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; transition: all 0.3s ease; }
+        .form-input:focus { outline: none; border-color: var(--primary-10); box-shadow: 0 0 0 3px rgba(96,165,250,0.2); background: rgba(255,255,255,0.1); }
+        .form-input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2360a5fa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 12px center; background-repeat: no-repeat; background-size: 20px; padding-right: 40px; cursor: pointer; }
+        select.form-input option { background: var(--primary-60); color: white; padding: 8px; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: linear-gradient(135deg, var(--primary-60), #0f2b4f); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; transform: translateY(20px); transition: all 0.3s ease; max-height: 90vh; overflow-y: auto; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        /* File Upload */
+        .file-drop-area { border: 2px dashed rgba(255,255,255,0.2); border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+        .file-drop-area:hover { border-color: var(--primary-10); background: rgba(96,165,250,0.1); }
+        .file-drop-area.dragover { border-color: var(--primary-10); background: rgba(96,165,250,0.2); transform: scale(1.02); }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 16px 24px; border-radius: 10px; background: rgba(10,38,71,0.95); backdrop-filter: blur(10px); border: 1px solid var(--primary-10); color: white; z-index: 2000; animation: slideIn 0.3s ease; }
+
+        /* Sidebar */
+        .sidebar { width: 280px; height: 100vh; position: fixed; left: 0; top: 0; background: rgba(10,38,71,0.95); backdrop-filter: blur(10px); border-right: 1px solid rgba(255,255,255,0.1); overflow-y: auto; }
+        .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: rgba(255,255,255,0.7); transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .sidebar-link:hover { background: rgba(96,165,250,0.1); color: white; }
+        .sidebar-link.active { background: rgba(96,165,250,0.15); border-left-color: var(--primary-10); color: white; }
+
+        /* Main Content */
+        .main-content { margin-left: 280px; padding: 30px; }
+
+        /* Stats Card */
+        .stat-card { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; cursor: pointer; }
+        .stat-card:hover { border-color: var(--primary-10); transform: translateY(-5px); }
+
+        /* Loading */
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary-10); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-left: 0; }
+        }
+
+        /* Account Badge */
+        .account-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; background: rgba(96,165,250,0.2); color: var(--primary-10); margin-left: 8px; }
+
+        /* Hover Effects */
+        .hover-lift { transition: transform 0.2s ease; }
+        .hover-lift:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center">
+        <div class="glass-card p-8 rounded-2xl w-96 animate-scaleIn">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#60a5fa] flex items-center justify-center animate-pulse">
+                    <i class="fas fa-crown text-white text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold">LyyTechID Admin</h1>
+                <p class="text-gray-400 text-sm mt-2">Secure Access Required</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div class="animate-slideUp" style="animation-delay: 0.1s">
+                    <label class="block text-sm text-gray-400 mb-2">Username</label>
+                    <input type="text" id="loginUsername" required class="form-input" placeholder="Enter username">
+                </div>
+                <div class="animate-slideUp" style="animation-delay: 0.2s">
+                    <label class="block text-sm text-gray-400 mb-2">Password</label>
+                    <input type="password" id="loginPassword" required class="form-input" placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn-primary w-full animate-slideUp" style="animation-delay: 0.3s">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+            </form>
+
+            <div id="loginError" class="mt-4 p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm hidden animate-fadeIn"></div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="p-6 border-b border-white/10">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#60a5fa] flex items-center justify-center">
+                        <i class="fas fa-store text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold">LyyTechID</h2>
+                        <p class="text-xs text-gray-400" id="adminName">Admin</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="p-4 space-y-1">
+                <a href="#" onclick="showSection('dashboard')" class="sidebar-link">
+                    <i class="fas fa-chart-pie w-8"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('orders')" class="sidebar-link">
+                    <i class="fas fa-shopping-cart w-8"></i>
+                    <span>Orders</span>
+                    <span id="pendingBadge" class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full hidden">0</span>
+                </a>
+                <a href="#" onclick="showSection('accounts')" class="sidebar-link">
+                    <i class="fas fa-database w-8"></i>
+                    <span>Account Stock</span>
+                    <span id="stockBadge" class="ml-auto bg-green-500 text-xs px-2 py-1 rounded-full">0</span>
+                </a>
+                <a href="#" onclick="showSection('products')" class="sidebar-link">
+                    <i class="fas fa-box w-8"></i>
+                    <span>Products</span>
+                </a>
+                <a href="#" onclick="showSection('settings')" class="sidebar-link">
+                    <i class="fas fa-cog w-8"></i>
+                    <span>Settings</span>
+                </a>
+                <div class="border-t border-white/10 my-4"></div>
+                <a href="#" onclick="logout()" class="sidebar-link text-red-400">
+                    <i class="fas fa-sign-out-alt w-8"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="space-y-6">
+                <h1 class="text-3xl font-bold animate-slideUp">Dashboard Overview</h1>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="stat-card animate-slideUp" style="animation-delay: 0.1s">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Total Orders</p>
+                                <h2 class="text-3xl font-bold mt-2" id="totalOrders">0</h2>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-[#1e3a8a]/30 flex items-center justify-center">
+                                <i class="fas fa-shopping-cart text-[#60a5fa] text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card animate-slideUp" style="animation-delay: 0.2s">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Completed</p>
+                                <h2 class="text-3xl font-bold mt-2" id="completedOrders">0</h2>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-green-500/30 flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card animate-slideUp" style="animation-delay: 0.3s">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Pending</p>
+                                <h2 class="text-3xl font-bold mt-2" id="pendingOrders">0</h2>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-yellow-500/30 flex items-center justify-center">
+                                <i class="fas fa-clock text-yellow-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card animate-slideUp" style="animation-delay: 0.4s">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Revenue</p>
+                                <h2 class="text-3xl font-bold mt-2" id="totalRevenue">IDR 0</h2>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-purple-500/30 flex items-center justify-center">
+                                <i class="fas fa-money-bill-wave text-purple-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts & Tables -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass-card rounded-xl p-6 animate-fadeIn">
+                        <h3 class="text-lg font-semibold mb-4">Revenue Overview</h3>
+                        <canvas id="revenueChart" height="300"></canvas>
+                    </div>
+
+                    <div class="glass-card rounded-xl p-6 animate-fadeIn">
+                        <h3 class="text-lg font-semibold mb-4">Stock Status</h3>
+                        <div id="stockStatus" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="glass-card rounded-xl p-6 animate-fadeIn">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Recent Orders</h3>
+                        <button onclick="showSection('orders')" class="text-[#60a5fa] text-sm hover:underline transition">
+                            View All <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Order ID</th>
+                                    <th class="table-header">Customer</th>
+                                    <th class="table-header">Product</th>
+                                    <th class="table-header">Amount</th>
+                                    <th class="table-header">Status</th>
+                                    <th class="table-header">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentOrdersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="ordersSection" class="hidden space-y-6">
+                <h1 class="text-3xl font-bold animate-slideUp">Order Management</h1>
+
+                <div class="glass-card rounded-xl p-6 animate-slideUp">
+                    <div class="flex flex-wrap gap-4">
+                        <select id="orderStatusFilter" class="form-input w-auto min-w-[150px]">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select id="orderProductFilter" class="form-input w-auto min-w-[150px]">
+                            <option value="">All Products</option>
+                        </select>
+                        <input type="text" id="orderSearch" placeholder="Search by email or order ID..." class="form-input flex-1">
+                        <button onclick="loadOrders()" class="btn-primary">
+                            <i class="fas fa-search mr-2"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl overflow-hidden animate-slideUp">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-white/5">
+                                <tr>
+                                    <th class="table-header">Order ID</th>
+                                    <th class="table-header">Customer</th>
+                                    <th class="table-header">Product</th>
+                                    <th class="table-header">Amount</th>
+                                    <th class="table-header">Status</th>
+                                    <th class="table-header">Date</th>
+                                    <th class="table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                    <div id="ordersPagination" class="px-6 py-4 border-t border-white/10 flex justify-center"></div>
+                </div>
+            </div>
+
+            <!-- Accounts Section -->
+            <div id="accountsSection" class="hidden space-y-6">
+                <div class="flex justify-between items-center animate-slideUp">
+                    <h1 class="text-3xl font-bold">Account Stock Management</h1>
+                    <button onclick="showUploadModal()" class="btn-primary">
+                        <i class="fas fa-upload mr-2"></i> Upload JSON
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slideUp">
+                    <div class="stat-card">
+                        <p class="text-gray-400">Total Accounts</p>
+                        <h2 class="text-3xl font-bold mt-2" id="totalAccounts">0</h2>
+                    </div>
+                    <div class="stat-card">
+                        <p class="text-gray-400">Available</p>
+                        <h2 class="text-3xl font-bold mt-2 text-green-400" id="availableAccounts">0</h2>
+                    </div>
+                    <div class="stat-card">
+                        <p class="text-gray-400">Sold</p>
+                        <h2 class="text-3xl font-bold mt-2 text-blue-400" id="soldAccounts">0</h2>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 animate-slideUp">
+                    <div class="flex flex-wrap gap-4">
+                        <select id="accountProductFilter" class="form-input w-auto min-w-[150px]">
+                            <option value="">All Products</option>
+                        </select>
+                        <select id="accountStatusFilter" class="form-input w-auto min-w-[150px]">
+                            <option value="">All Status</option>
+                            <option value="available">Available</option>
+                            <option value="sold">Sold</option>
+                        </select>
+                        <button onclick="showAddAccountModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i> Add Manual
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl overflow-hidden animate-slideUp">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-white/5">
+                                <tr>
+                                    <th class="table-header">ID</th>
+                                    <th class="table-header">Product</th>
+                                    <th class="table-header">Email</th>
+                                    <th class="table-header">Password</th>
+                                    <th class="table-header">2FA</th>
+                                    <th class="table-header">Additional</th>
+                                    <th class="table-header">Status</th>
+                                    <th class="table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountsTable"></tbody>
+                        </table>
+                    </div>
+                    <div id="accountsPagination" class="px-6 py-4 border-t border-white/10 flex justify-center"></div>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="productsSection" class="hidden space-y-6">
+                <h1 class="text-3xl font-bold animate-slideUp">Product Management</h1>
+                <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settingsSection" class="hidden space-y-6">
+                <h1 class="text-3xl font-bold animate-slideUp">System Settings</h1>
+                <div class="glass-card rounded-xl p-6 animate-slideUp">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Shop Name</label>
+                            <input type="text" id="shopName" class="form-input" value="LyyShop ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Contact Email</label>
+                            <input type="email" id="contactEmail" class="form-input" value="admin@lyytech.id">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">WhatsApp Number</label>
+                            <input type="text" id="whatsappNumber" class="form-input" value="6281234567890">
+                        </div>
+                        <button onclick="saveSettings()" class="btn-primary">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Accounts Modal -->
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal-content animate-scaleIn">
+            <h2 class="text-2xl font-bold mb-6">Upload Accounts (JSON)</h2>
+            <form id="uploadForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Select Product</label>
+                    <select id="uploadProductId" class="form-input" required>
+                        <option value="">Choose product...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Upload JSON File</label>
+                    <div id="fileDropArea" class="file-drop-area">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-3"></i>
+                        <p class="text-gray-300">Click to select or drag & drop</p>
+                        <p class="text-sm text-gray-500 mt-2">JSON file with account data</p>
+                    </div>
+                    <input type="file" id="accountFile" accept=".json" class="hidden">
+                    <div id="fileInfo" class="mt-4 hidden">
+                        <div class="bg-white/5 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-code text-[#60a5fa] text-2xl mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="font-medium" id="fileName"></p>
+                                    <p class="text-sm text-gray-400" id="fileSize"></p>
+                                </div>
+                                <button type="button" onclick="clearFile()" class="text-red-400 hover:text-red-300">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <p class="text-sm text-gray-400 mb-2">JSON Format Example:</p>
+                    <pre class="text-xs text-gray-500 overflow-x-auto">
+[
+  {
+    "email": "user@example.com",
+    "password": "password123",
+    "twofa": "GAX123456",
+    "additional": {
+      "note": "any additional info"
+    }
+  }
+]</pre>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="hideUploadModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary" id="uploadBtn" disabled>Upload Accounts</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Account Manual Modal -->
+    <div id="addAccountModal" class="modal-overlay">
+        <div class="modal-content animate-scaleIn">
+            <h2 class="text-2xl font-bold mb-6">Add Account Manually</h2>
+            <form id="addAccountForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Select Product</label>
+                    <select id="addAccountProductId" class="form-input" required>
+                        <option value="">Choose product...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Email <span class="text-red-400">*</span></label>
+                    <input type="email" id="addAccountEmail" class="form-input" required placeholder="user@example.com">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Password <span class="text-red-400">*</span></label>
+                    <input type="text" id="addAccountPassword" class="form-input" required placeholder="password123">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">2FA Code (Optional)</label>
+                    <input type="text" id="addAccountTwofa" class="form-input" placeholder="GAX123456">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Additional Info (JSON format, optional)</label>
+                    <textarea id="addAccountAdditional" class="form-input" rows="3" placeholder='{"note": "any info"}'></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="hideAddAccountModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manual Complete Order Modal -->
+    <div id="completeOrderModal" class="modal-overlay">
+        <div class="modal-content animate-scaleIn">
+            <h2 class="text-2xl font-bold mb-6">Complete Order Manually</h2>
+            <p class="text-gray-400 mb-4">Order ID: <span id="completeOrderId" class="text-[#60a5fa] font-mono"></span></p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Select Account to Send</label>
+                    <select id="manualAccountSelect" class="form-input" required>
+                        <option value="">Loading accounts...</option>
+                    </select>
+                    <div id="accountStockInfo" class="mt-2 text-sm text-gray-400"></div>
+                </div>
+                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                    <p class="text-sm text-yellow-400">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        This will send account details to the customer's email.
+                    </p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="hideCompleteOrderModal()" class="btn-secondary">Cancel</button>
+                    <button onclick="completeOrderManually()" class="btn-primary" id="completeOrderBtn">Complete Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Order Modal -->
+    <div id="cancelOrderModal" class="modal-overlay">
+        <div class="modal-content animate-scaleIn">
+            <h2 class="text-2xl font-bold mb-6">Cancel Order</h2>
+            <p class="text-gray-400 mb-4">Order ID: <span id="cancelOrderId" class="text-[#60a5fa] font-mono"></span></p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Reason (Optional)</label>
+                    <input type="text" id="cancelReason" class="form-input" placeholder="e.g., Payment failed">
+                </div>
+                <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <p class="text-sm text-red-400">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="hideCancelOrderModal()" class="btn-secondary">Back</button>
+                    <button onclick="cancelOrderManually()" class="btn-danger">Cancel Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Account Modal -->
+    <div id="viewAccountModal" class="modal-overlay">
+        <div class="modal-content animate-scaleIn">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Account Details</h2>
+                <button onclick="hideViewAccountModal()" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
+            </div>
+            <div id="accountDetails" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/80 z-[3000] flex items-center justify-center">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p id="loadingText" class="text-lg">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast hidden"></div>
+    <div id="errorToast" class="toast hidden bg-red-600/90 border-red-500"></div>
+
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        let token = localStorage.getItem('adminToken');
+        let currentOrderPage = 1;
+        let currentAccountPage = 1;
+        let selectedFile = null;
+        let revenueChart = null;
+        let currentCompleteOrderId = null;
+
+        // ==================== AUTHENTICATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (token) checkAuth();
+            loadProducts();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            showLoading('Logging in...');
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    token = data.token;
+                    localStorage.setItem('adminToken', token);
+                    localStorage.setItem('adminData', JSON.stringify(data.admin));
+                    
+                    hideLoading();
+                    showDashboard();
+                    loadDashboardData();
+                    showToast('Login successful!', 'success');
+                } else {
+                    hideLoading();
+                    showLoginError(data.error || 'Login failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showLoginError('Network error');
+            }
+        });
+
+        async function checkAuth() {
+            showLoading('Verifying session...');
+            try {
+                const res = await fetch('/api/admin/verify', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    hideLoading();
+                    showDashboard();
+                    loadDashboardData();
+                } else {
+                    localStorage.removeItem('adminToken');
+                    hideLoading();
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Auth error:', error);
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+            document.getElementById('adminName').textContent = adminData.username || 'Admin';
+        }
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+        }
+
+        // ==================== DASHBOARD ====================
+        async function loadDashboardData() {
+            try {
+                const res = await fetch('/api/admin/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                animateNumber('totalOrders', data.stats.totalOrders);
+                animateNumber('completedOrders', data.stats.completedOrders);
+                animateNumber('pendingOrders', data.stats.pendingOrders);
+                animateRevenue('totalRevenue', data.stats.totalRevenue);
+
+                const badge = document.getElementById('pendingBadge');
+                if (data.stats.pendingOrders > 0) {
+                    badge.textContent = data.stats.pendingOrders;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+
+                updateRecentOrders(data.recentOrders);
+                updateStockStatus(data.stockStatus);
+                updateRevenueChart(data.revenueData);
+
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
+        }
+
+        function animateNumber(id, target) {
+            const el = document.getElementById(id);
+            const current = parseInt(el.textContent.replace(/,/g, '')) || 0;
+            const duration = 1000;
+            const step = Math.max(1, Math.floor((target - current) / 60));
+            let value = current;
+
+            const timer = setInterval(() => {
+                value += step;
+                if (value >= target) {
+                    value = target;
+                    clearInterval(timer);
+                }
+                el.textContent = value.toLocaleString('id-ID');
+            }, duration / 60);
+        }
+
+        function animateRevenue(id, target) {
+            const el = document.getElementById(id);
+            const current = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
+            const duration = 1000;
+            const step = Math.max(1, Math.floor((target - current) / 60));
+            let value = current;
+
+            const timer = setInterval(() => {
+                value += step;
+                if (value >= target) {
+                    value = target;
+                    clearInterval(timer);
+                }
+                el.textContent = `IDR ${value.toLocaleString('id-ID')}`;
+            }, duration / 60);
+        }
+
+        function updateRecentOrders(orders) {
+            const tbody = document.getElementById('recentOrdersTable');
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No recent orders</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.slice(0, 5).map(order => `
+                <tr class="table-row">
+                    <td class="table-cell font-mono">${order.orderId}</td>
+                    <td class="table-cell">${order.username}</td>
+                    <td class="table-cell">${order.productName || order.role}</td>
+                    <td class="table-cell">Rp ${order.amount?.toLocaleString() || '0'}</td>
+                    <td class="table-cell"><span class="badge badge-${order.status || 'pending'}">${order.status || 'pending'}</span></td>
+                    <td class="table-cell">${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStockStatus(products) {
+            const container = document.getElementById('stockStatus');
+            if (!products || products.length === 0) {
+                container.innerHTML = '<p class="text-gray-400">No products</p>';
+                return;
+            }
+
+            container.innerHTML = products.map(p => {
+                const percent = p.maxStock > 0 ? (p.stock / p.maxStock) * 100 : 0;
+                let color = 'bg-green-500';
+                if (percent < 20) color = 'bg-red-500';
+                else if (percent < 50) color = 'bg-yellow-500';
+
+                return `
+                    <div class="hover-lift">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${p.name}</span>
+                            <span class="text-gray-400">${p.stock}/${p.maxStock}</span>
+                        </div>
+                        <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full ${color} progress-bar" style="width: ${percent}%; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateRevenueChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels || [],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: data.values || [],
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } },
+                        x: { grid: { display: false }, ticks: { color: 'white' } }
+                    },
+                    animation: { duration: 1000 }
+                }
+            });
+        }
+
+        // ==================== PRODUCTS ====================
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/roles');
+                const data = await res.json();
+                const products = data.roles || [];
+
+                const productFilters = ['orderProductFilter', 'accountProductFilter', 'uploadProductId', 'addAccountProductId'];
+                productFilters.forEach(id => {
+                    const select = document.getElementById(id);
+                    if (select) {
+                        select.innerHTML = '<option value="">All Products</option>' + 
+                            products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                    }
+                });
+
+                const grid = document.getElementById('productsGrid');
+                if (grid) {
+                    grid.innerHTML = products.map(p => `
+                        <div class="glass-card rounded-xl p-6 hover-lift">
+                            <h3 class="text-xl font-bold mb-2">${p.name}</h3>
+                            <p class="text-gray-400 mb-4">Rp ${p.price?.toLocaleString() || '0'}</p>
+                            <p class="text-sm text-gray-500 mb-4">${p.description || ''}</p>
+                            <div class="space-y-3">
+                                <input type="number" id="price_${p.id}" value="${p.price || 0}" class="form-input" placeholder="Price">
+                                <textarea id="desc_${p.id}" class="form-input" placeholder="Description">${p.description || ''}</textarea>
+                                <button onclick="updateProduct('${p.id}')" class="btn-primary w-full">Update</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        async function updateProduct(id) {
+            const price = document.getElementById(`price_${id}`).value;
+            const description = document.getElementById(`desc_${id}`).value;
+
+            showLoading('Updating product...');
+
+            try {
+                const res = await fetch(`/api/admin/roles/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ price, description })
+                });
+
+                const data = await res.json();
+                hideLoading();
+
+                if (data.success) {
+                    showToast('Product updated successfully');
+                    loadDashboardData();
+                } else {
+                    showError(data.error || 'Update failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error');
+            }
+        }
+
+        // ==================== ACCOUNTS ====================
+        async function loadAccounts(page = 1) {
+            currentAccountPage = page;
+
+            const product = document.getElementById('accountProductFilter')?.value || '';
+            const status = document.getElementById('accountStatusFilter')?.value || '';
+
+            let url = `/api/admin/accounts?page=${page}&limit=20`;
+            if (product) url += `&product_id=${product}`;
+            if (status) url += `&status=${status}`;
+
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
+                const data = await res.json();
+                updateAccountsTable(data.accounts, data.pagination);
+
+                const statsRes = await fetch('/api/admin/accounts/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    if (stats.success) {
+                        document.getElementById('totalAccounts').textContent = stats.stats.total || 0;
+                        document.getElementById('availableAccounts').textContent = stats.stats.available || 0;
+                        document.getElementById('soldAccounts').textContent = stats.stats.sold || 0;
+                        document.getElementById('stockBadge').textContent = stats.stats.available || 0;
+                    }
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading accounts:', error);
+                showError('Failed to load accounts: ' + error.message);
+            }
+        }
+
+        function updateAccountsTable(accounts, pagination) {
+            const tbody = document.getElementById('accountsTable');
+            if (!accounts || accounts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">No accounts found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = accounts.map(acc => {
+                const additional = acc.additional_info || {};
+                const hasAdditional = Object.keys(additional).length > 0;
+                return `
+                    <tr class="table-row">
+                        <td class="table-cell">#${acc.id}</td>
+                        <td class="table-cell">${acc.product_id}</td>
+                        <td class="table-cell">${acc.email}</td>
+                        <td class="table-cell">
+                            <span class="font-mono">${'•'.repeat(8)}</span>
+                            <button onclick="copyToClipboard('${acc.password}')" class="ml-2 text-[#60a5fa] hover:text-[#1e3a8a] transition" title="Copy password">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </td>
+                        <td class="table-cell">${acc.twofa_code || '-'}</td>
+                        <td class="table-cell">${hasAdditional ? '✓' : '-'}</td>
+                        <td class="table-cell">
+                            <span class="badge ${acc.status === 'available' ? 'badge-paid' : 'badge-completed'}">
+                                ${acc.status}
+                            </span>
+                        </td>
+                        <td class="table-cell">
+                            <button onclick="viewAccount(${acc.id})" class="text-[#60a5fa] hover:text-[#1e3a8a] mr-3 transition" title="View details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${acc.status === 'available' ? `
+                                <button onclick="deleteAccount(${acc.id})" class="text-red-400 hover:text-red-300 transition" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updatePagination('accountsPagination', pagination, loadAccounts);
+        }
+
+        async function viewAccount(id) {
+            try {
+                const res = await fetch(`/api/admin/accounts/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const acc = data.account;
+                    const additional = acc.additional_info || {};
+
+                    document.getElementById('accountDetails').innerHTML = `
+                        <div class="space-y-3 animate-fadeIn">
+                            <p><strong class="text-gray-400">ID:</strong> <span class="text-white">${acc.id}</span></p>
+                            <p><strong class="text-gray-400">Product:</strong> <span class="text-white">${acc.product_id}</span></p>
+                            <p><strong class="text-gray-400">Email:</strong> <span class="text-white">${acc.email}</span></p>
+                            <p><strong class="text-gray-400">Password:</strong> <span class="text-white font-mono">${acc.password}</span></p>
+                            <p><strong class="text-gray-400">2FA:</strong> <span class="text-white">${acc.twofa_code || 'None'}</span></p>
+                            <p><strong class="text-gray-400">Additional Info:</strong></p>
+                            <pre class="bg-white/5 p-3 rounded-lg text-xs text-white overflow-x-auto">${JSON.stringify(additional, null, 2)}</pre>
+                            <p><strong class="text-gray-400">Status:</strong> <span class="badge ${acc.status === 'available' ? 'badge-paid' : 'badge-completed'}">${acc.status}</span></p>
+                            <p><strong class="text-gray-400">Created:</strong> <span class="text-white">${new Date(acc.created_at).toLocaleString()}</span></p>
+                            ${acc.sold_at ? `<p><strong class="text-gray-400">Sold At:</strong> <span class="text-white">${new Date(acc.sold_at).toLocaleString()}</span></p>` : ''}
+                            ${acc.sold_to ? `<p><strong class="text-gray-400">Sold To:</strong> <span class="text-white">${acc.sold_to}</span></p>` : ''}
+                            ${acc.order_id ? `<p><strong class="text-gray-400">Order ID:</strong> <span class="text-white font-mono">${acc.order_id}</span></p>` : ''}
+                        </div>
+                    `;
+                    document.getElementById('viewAccountModal').classList.add('active');
+                } else {
+                    showError('Failed to load account details');
+                }
+            } catch (error) {
+                console.error('View account error:', error);
+                showError('Failed to load account details');
+            }
+        }
+
+        function hideViewAccountModal() {
+            document.getElementById('viewAccountModal').classList.remove('active');
+        }
+
+        async function deleteAccount(id) {
+            if (!confirm('Delete this account? This cannot be undone.')) return;
+
+            try {
+                const res = await fetch(`/api/admin/accounts/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Account deleted');
+                    loadAccounts(currentAccountPage);
+                } else {
+                    showError(data.error || 'Delete failed');
+                }
+            } catch (error) {
+                showError('Network error');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard');
+            }).catch(() => {
+                showError('Failed to copy');
+            });
+        }
+
+        // ==================== ADD ACCOUNT MANUAL ====================
+        function showAddAccountModal() {
+            document.getElementById('addAccountModal').classList.add('active');
+            document.getElementById('addAccountForm').reset();
+        }
+
+        function hideAddAccountModal() {
+            document.getElementById('addAccountModal').classList.remove('active');
+        }
+
+        document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productId = document.getElementById('addAccountProductId').value;
+            const email = document.getElementById('addAccountEmail').value;
+            const password = document.getElementById('addAccountPassword').value;
+            const twofa = document.getElementById('addAccountTwofa').value;
+            const additionalText = document.getElementById('addAccountAdditional').value;
+
+            if (!productId || !email || !password) {
+                showError('Please fill all required fields');
+                return;
+            }
+
+            let additional = {};
+            if (additionalText) {
+                try {
+                    additional = JSON.parse(additionalText);
+                } catch (e) {
+                    showError('Invalid JSON format in additional info');
+                    return;
+                }
+            }
+
+            showLoading('Adding account...');
+
+            try {
+                const res = await fetch('/api/admin/accounts/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        productId,
+                        accounts: [{
+                            email,
+                            password,
+                            twofa: twofa || undefined,
+                            additional
+                        }]
+                    })
+                });
+
+                const data = await res.json();
+                hideLoading();
+
+                if (data.success) {
+                    hideAddAccountModal();
+                    showToast('Account added successfully');
+                    loadAccounts(currentAccountPage);
+                } else {
+                    showError(data.error || 'Failed to add account');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error');
+            }
+        });
+
+        // ==================== ORDERS ====================
+        async function loadOrders(page = 1) {
+            currentOrderPage = page;
+
+            const status = document.getElementById('orderStatusFilter')?.value || '';
+            const product = document.getElementById('orderProductFilter')?.value || '';
+            const search = document.getElementById('orderSearch')?.value || '';
+
+            let url = `/api/admin/orders?page=${page}&limit=20`;
+            if (status) url += `&status=${status}`;
+            if (product) url += `&product=${product}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                updateOrdersTable(data.orders, data.pagination);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        function updateOrdersTable(orders, pagination) {
+            const tbody = document.getElementById('ordersTable');
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">No orders found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => `
+                <tr class="table-row">
+                    <td class="table-cell font-mono">${order.orderId}</td>
+                    <td class="table-cell">${order.username}</td>
+                    <td class="table-cell">${order.productName || order.role}</td>
+                    <td class="table-cell">Rp ${order.amount?.toLocaleString() || '0'}</td>
+                    <td class="table-cell">
+                        <span class="badge badge-${order.status || 'pending'}">${order.status || 'pending'}</span>
+                    </td>
+                    <td class="table-cell">${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '-'}</td>
+                    <td class="table-cell">
+                        <div class="flex space-x-2">
+                            <button onclick="viewOrder('${order.orderId}')" class="text-[#60a5fa] hover:text-[#1e3a8a] transition" title="View order">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${order.status === 'pending' ? `
+                                <button onclick="showCompleteOrderModal('${order.orderId}')" class="text-green-400 hover:text-green-300 transition" title="Complete manually">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                                <button onclick="showCancelOrderModal('${order.orderId}')" class="text-red-400 hover:text-red-300 transition" title="Cancel order">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            updatePagination('ordersPagination', pagination, loadOrders);
+        }
+
+        function viewOrder(orderId) {
+            window.open(`/?order=${orderId}`, '_blank');
+        }
+
+        // ==================== MANUAL ORDER ACTIONS ====================
+        async function showCompleteOrderModal(orderId) {
+            document.getElementById('completeOrderId').textContent = orderId;
+            document.getElementById('completeOrderModal').classList.add('active');
+            currentCompleteOrderId = orderId;
+
+            const select = document.getElementById('manualAccountSelect');
+            select.innerHTML = '<option value="">Loading accounts...</option>';
+            select.disabled = true;
+
+            const stockInfo = document.getElementById('accountStockInfo');
+            stockInfo.innerHTML = '';
+
+            try {
+                const orderRes = await fetch(`/api/order/${orderId}`);
+                if (!orderRes.ok) throw new Error(`HTTP error ${orderRes.status}`);
+                
+                const orderData = await orderRes.json();
+                
+                if (!orderData.success || !orderData.order) {
+                    throw new Error('Order not found');
+                }
+                
+                let productId = orderData.order.productId || orderData.order.roleId || orderData.order.role;
+                if (productId) {
+                    productId = productId.toLowerCase().trim();
+                }
+
+                if (!productId) {
+                    throw new Error('Product ID not found in order');
+                }
+
+                const accountsUrl = `/api/admin/accounts?product_id=${encodeURIComponent(productId)}&status=available&limit=50`;
+                
+                const accountsRes = await fetch(accountsUrl, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const accountsData = await accountsRes.json();
+
+                select.disabled = false;
+
+                if (!accountsData.accounts || accountsData.accounts.length === 0) {
+                    select.innerHTML = '<option value="">No accounts available for this product</option>';
+                    stockInfo.innerHTML = `<span class="text-yellow-400">⚠️ No available accounts for product: ${productId}</span>`;
+                } else {
+                    select.innerHTML = '<option value="">Choose account...</option>' + 
+                        accountsData.accounts.map(acc => 
+                            `<option value="${acc.id}">${acc.email} (ID: ${acc.id})</option>`
+                        ).join('');
+                    
+                    stockInfo.innerHTML = `<span class="text-green-400">✅ ${accountsData.accounts.length} account(s) available</span>`;
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading accounts:', error);
+                select.innerHTML = '<option value="">Error loading accounts</option>';
+                select.disabled = false;
+                showError('Failed to load accounts: ' + error.message);
+            }
+        }
+
+        function hideCompleteOrderModal() {
+            document.getElementById('completeOrderModal').classList.remove('active');
+        }
+
+        async function completeOrderManually() {
+            const orderId = document.getElementById('completeOrderId').textContent;
+            const accountId = document.getElementById('manualAccountSelect').value;
+
+            if (!accountId) {
+                showError('Please select an account');
+                return;
+            }
+
+            const completeBtn = document.getElementById('completeOrderBtn');
+            completeBtn.disabled = true;
+            completeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+
+            try {
+                const res = await fetch(`/api/admin/orders/${orderId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ accountId })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('✅ Order completed successfully');
+                    hideCompleteOrderModal();
+                    loadOrders(currentOrderPage);
+                    loadAccounts(currentAccountPage);
+                    loadDashboardData();
+                } else {
+                    showError(data.error || 'Failed to complete order');
+                }
+            } catch (error) {
+                showError('Network error');
+            } finally {
+                completeBtn.disabled = false;
+                completeBtn.innerHTML = 'Complete Order';
+            }
+        }
+
+        function showCancelOrderModal(orderId) {
+            document.getElementById('cancelOrderId').textContent = orderId;
+            document.getElementById('cancelOrderModal').classList.add('active');
+        }
+
+        function hideCancelOrderModal() {
+            document.getElementById('cancelOrderModal').classList.remove('active');
+        }
+
+        async function cancelOrderManually() {
+            const orderId = document.getElementById('cancelOrderId').textContent;
+            const reason = document.getElementById('cancelReason').value;
+
+            showLoading('Cancelling order...');
+
+            try {
+                const res = await fetch(`/api/admin/orders/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await res.json();
+                hideLoading();
+                hideCancelOrderModal();
+
+                if (data.success) {
+                    showToast('Order cancelled');
+                    loadOrders(currentOrderPage);
+                    loadDashboardData();
+                } else {
+                    showError(data.error || 'Failed to cancel order');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error');
+            }
+        }
+
+        // ==================== FILE UPLOAD ====================
+        function showUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+            setupFileUpload();
+        }
+
+        function hideUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+            clearFile();
+        }
+
+        function setupFileUpload() {
+            const fileInput = document.getElementById('accountFile');
+            const dropArea = document.getElementById('fileDropArea');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            const newDropArea = dropArea.cloneNode(true);
+            dropArea.parentNode.replaceChild(newDropArea, dropArea);
+            
+            const newFileInput = fileInput.cloneNode(true);
+            fileInput.parentNode.replaceChild(newFileInput, fileInput);
+            
+            const updatedFileInput = document.getElementById('accountFile');
+            const updatedDropArea = document.getElementById('fileDropArea');
+            const updatedFileInfo = document.getElementById('fileInfo');
+
+            updatedDropArea.onclick = () => updatedFileInput.click();
+
+            updatedDropArea.ondragover = (e) => {
+                e.preventDefault();
+                updatedDropArea.classList.add('dragover');
+            };
+
+            updatedDropArea.ondragleave = () => {
+                updatedDropArea.classList.remove('dragover');
+            };
+
+            updatedDropArea.ondrop = (e) => {
+                e.preventDefault();
+                updatedDropArea.classList.remove('dragover');
+                handleFile(e.dataTransfer.files[0]);
+            };
+
+            updatedFileInput.onchange = (e) => handleFile(e.target.files[0]);
+
+            function handleFile(file) {
+                if (!file) return;
+                if (!file.name.endsWith('.json')) {
+                    showError('Please select a JSON file');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('File too large (max 5MB)');
+                    return;
+                }
+
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+                updatedFileInfo.classList.remove('hidden');
+                uploadBtn.disabled = false;
+            }
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('accountFile').value = '';
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productId = document.getElementById('uploadProductId').value;
+            if (!selectedFile || !productId) {
+                showError('Please select a product and file');
+                return;
+            }
+
+            showLoading('Uploading accounts...');
+
+            try {
+                const text = await selectedFile.text();
+                const accounts = JSON.parse(text);
+
+                const res = await fetch('/api/admin/accounts/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ productId, accounts })
+                });
+
+                const data = await res.json();
+                hideLoading();
+
+                if (data.success) {
+                    hideUploadModal();
+                    showToast(`${data.message || 'Accounts uploaded successfully'}`);
+                    loadAccounts(currentAccountPage);
+                    loadDashboardData();
+                } else {
+                    showError(data.error || 'Upload failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Invalid JSON file');
+            }
+        });
+
+        // ==================== SETTINGS ====================
+        async function saveSettings() {
+            const settings = {
+                shopName: document.getElementById('shopName').value,
+                contactEmail: document.getElementById('contactEmail').value,
+                whatsappNumber: document.getElementById('whatsappNumber').value
+            };
+
+            showLoading('Saving settings...');
+
+            try {
+                const res = await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                const data = await res.json();
+                hideLoading();
+
+                if (data.success) {
+                    showToast('Settings saved');
+                } else {
+                    showError(data.error || 'Save failed');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error');
+            }
+        }
+
+        // ==================== UTILITIES ====================
+        function showSection(section) {
+            document.querySelectorAll('#dashboardSection, #ordersSection, #accountsSection, #productsSection, #settingsSection')
+                .forEach(el => el.classList.add('hidden'));
+
+            if (section === 'dashboard') document.getElementById('dashboardSection').classList.remove('hidden');
+            if (section === 'orders') {
+                document.getElementById('ordersSection').classList.remove('hidden');
+                loadOrders();
+            }
+            if (section === 'accounts') {
+                document.getElementById('accountsSection').classList.remove('hidden');
+                loadAccounts();
+            }
+            if (section === 'products') {
+                document.getElementById('productsSection').classList.remove('hidden');
+                loadProducts();
+            }
+            if (section === 'settings') {
+                document.getElementById('settingsSection').classList.remove('hidden');
+            }
+
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+            const activeLink = Array.from(document.querySelectorAll('.sidebar-link')).find(link => 
+                link.textContent.toLowerCase().includes(section)
+            );
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        function updatePagination(containerId, pagination, callback) {
+            const container = document.getElementById(containerId);
+            if (!container || !pagination || pagination.pages <= 1) {
+                if (container) container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="flex space-x-2">';
+            
+            if (pagination.page > 1) {
+                html += `<button onclick="${callback.name}(${pagination.page - 1})" class="btn-secondary px-3 py-2 hover-lift">«</button>`;
+            }
+
+            for (let i = 1; i <= pagination.pages; i++) {
+                if (i === pagination.page) {
+                    html += `<span class="btn-primary px-3 py-2">${i}</span>`;
+                } else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.pages) {
+                    html += `<button onclick="${callback.name}(${i})" class="btn-secondary px-3 py-2 hover-lift">${i}</button>`;
+                } else if (Math.abs(i - pagination.page) === 3) {
+                    html += `<span class="btn-secondary px-3 py-2 opacity-50">...</span>`;
+                }
+            }
+
+            if (pagination.page < pagination.pages) {
+                html += `<button onclick="${callback.name}(${pagination.page + 1})" class="btn-secondary px-3 py-2 hover-lift">»</button>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text || 'Loading...';
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function showError(message) {
+            const toast = document.getElementById('errorToast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function logout() {
+            if (confirm('Logout?')) {
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminData');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
