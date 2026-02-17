@@ -91,6 +91,29 @@ const routeFiles = [
     //{ path: '/api/admin/redeem-codes', file: 'redeem-upload' }
 ];
 
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ 
+            success: false, 
+            error: 'No token provided' 
+        });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ 
+                success: false, 
+                error: 'Invalid or expired token' 
+            });
+        }
+        req.user = user;
+        next();
+    });
+};
+
 routeFiles.forEach(route => {
     try {
         const routePath = path.join(__dirname, 'server', 'routes', `${route.file}.js`);
@@ -104,6 +127,18 @@ routeFiles.forEach(route => {
     } catch (error) {
         log.warn(`⚠️ Route not loaded: ${route.path} - ${error.message}`);
     }
+});
+
+app.get('/api/admin/verify', authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        user: {
+            id: req.user.id,
+            username: req.user.username,
+            role: req.user.role
+        },
+        message: 'Token is valid'
+    });
 });
 
 app.get('/api/bot/status', (req, res) => {
