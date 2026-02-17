@@ -1,7 +1,7 @@
 // server/routes/admin/orders-accounts.js
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../../../middleware/auth');
+const { authenticateToken } = require('../../middleware/auth');
 const { db, Account } = require('../../config/database');
 const whatsappBot = require('../../models/WhatsAppBot');
 const fs = require('fs');
@@ -566,5 +566,6 @@ router.post('/orders/:orderId/cancel', authenticateToken, async (req, res) => {
         });
     }
 });
+
 
 module.exports = router;
