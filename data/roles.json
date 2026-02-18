@@ -5,7 +5,7 @@
       "name": "Spotify 2 Bulan",
       "price": "5000",
       "description": "Spotify Premium 2 Bulan",
-      "image": "/img/role/spotiffy.png",
+      "image": "/img/role/spotify.png",
       "role_id": 1,
       "stock": "0"
     },
@@ -14,7 +14,7 @@
       "name": "Panel Digital Ocean 10 Droplet",
       "price": "40000",
       "description": "Panel Digital Ocean dengan 10 Droplet",
-      "image": "/img/role/digitalocean10.png",
+      "image": "/img/role/digitalocean.png",
       "role_id": 2,
       "stock": "0"
     },
@@ -23,7 +23,7 @@
       "name": "Panel Digital Ocean 3 Droplet",
       "price": "30000",
       "description": "Panel Digital Ocean dengan 3 Droplet",
-      "image": "/img/role/digitalocean3.png",
+      "image": "/img/role/digitalocean.png",
       "role_id": 3,
       "stock": "0"
     },
@@ -32,7 +32,7 @@
       "name": "Netflix 1 Bulan",
       "price": "20000",
       "description": "Netflix Premium 1 Bulan",
-      "image": "/img/role/netflik.png",
+      "image": "/img/role/netflix.png",
       "role_id": 4,
       "stock": "0"
     },
@@ -42,6 +42,15 @@
       "price": "15000",
       "description": "WeTV Premium 1 Bulan",
       "image": "/img/role/wetv.png",
+      "role_id": 5,
+      "stock": "0"
+    }
+     {
+      "id": "viu_1_bulan",
+      "name": "Viu 1 Bulan",
+      "price": "15000",
+      "description": "Viu Premium 1 Bulan",
+      "image": "/img/role/viu.png",
       "role_id": 5,
       "stock": "0"
     }
