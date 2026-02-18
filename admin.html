@@ -575,8 +575,8 @@
         .category-pill {
             display: inline-block;
             padding: 8px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(37, 99, 235, 0.3);
+            border: 1px solid #60a5fa;
             border-radius: 30px;
             color: white;
             font-size: 0.9rem;
@@ -584,18 +584,22 @@
             cursor: pointer;
             transition: all 0.2s ease;
             margin: 4px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .category-pill:hover {
-            background: var(--primary-30);
-            border-color: var(--primary-10);
-            color: white;
+            background: #2563eb;
+            border-color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
         }
 
         .category-pill.active {
-            background: var(--primary-10);
-            border-color: var(--primary-10);
+            background: #3b82f6;
+            border-color: white;
             color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
         }
 
         .pagination {
@@ -641,6 +645,19 @@
             outline: none;
             border-color: white;
             background: rgba(255, 255, 255, 0.15);
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 10px 25px -5px rgba(96, 165, 250, 0.3);
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -875,6 +892,7 @@
                         <button class="category-pill" data-category="netflix">📺 Netflix</button>
                         <button class="category-pill" data-category="wetv">📺 WeTV</button>
                         <button class="category-pill" data-category="panel">🖥️ Panel</button>
+                        <button class="category-pill" data-category="viu">📺 Viu</button>
                     </div>
                     
                     <div id="productsGrid" class="products-grid"></div>
@@ -1462,6 +1480,7 @@
                         if(category==='netflix') return p.id.includes('netflix');
                         if(category==='wetv') return p.id.includes('wetv');
                         if(category==='panel') return p.id.includes('panel');
+                        if(category==='viu') return p.id.includes('viu');
                         return true;
                     });
                     displayProducts(filtered);
@@ -1518,27 +1537,28 @@
                     const price=Number(p.price||0);
                     const stock=Number(p.stock)||0;
                     return `
-                        <div class="glass-card p-4">
-                            <h3 class="font-bold mb-2">${safeName}</h3>
-                            <p class="text-gray-400 text-sm mb-3">Current Price: Rp ${price.toLocaleString('id-ID')}</p>
+                        <div class="product-card glass-card p-4">
+                            <h3 class="font-bold text-lg mb-2 text-white">${safeName}</h3>
+                            <p class="text-gray-300 text-sm mb-3">Current Price: Rp ${price.toLocaleString('id-ID')}</p>
+                            <p class="text-gray-300 text-sm mb-3">Current Stock: <span class="font-semibold text-${stock>0?'green-400':'red-400'}">${stock}</span></p>
                             
                             <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm text-gray-400 w-20">Price:</label>
-                                    <input type="number" id="price_${safeId}" value="${price}" class="form-input text-sm flex-1" placeholder="New Price" min="0">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-sm text-gray-300">New Price:</label>
+                                    <input type="number" id="price_${safeId}" value="${price}" class="form-input text-sm" placeholder="New Price" min="0">
                                 </div>
                                 
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm text-gray-400 w-20">Stock:</label>
-                                    <input type="number" id="stock_${safeId}" value="${stock}" class="form-input text-sm flex-1" placeholder="Stock" min="0">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-sm text-gray-300">New Stock:</label>
+                                    <input type="number" id="stock_${safeId}" value="${stock}" class="form-input text-sm" placeholder="Stock" min="0">
                                 </div>
                                 
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm text-gray-400 w-20">Description:</label>
-                                    <textarea id="desc_${safeId}" class="form-input text-sm flex-1" placeholder="Description" rows="2">${safeDesc}</textarea>
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-sm text-gray-300">Description:</label>
+                                    <textarea id="desc_${safeId}" class="form-input text-sm" placeholder="Description" rows="2">${safeDesc}</textarea>
                                 </div>
                                 
-                                <button onclick="updateProduct('${safeId}')" class="btn-primary text-sm py-2 w-full mt-2">
+                                <button onclick="updateProduct('${safeId}')" class="btn-primary text-sm py-3 w-full mt-2">
                                     <i class="fas fa-save mr-1"></i> Update Product
                                 </button>
                             </div>
@@ -1570,7 +1590,7 @@
                 
                 showLoading('Updating product...');
                 try{
-                    const res=await secureFetch(`/api/admin/roles/${sanitizeInput(id)}`,{
+                    const res=await secureFetch(`/api/admin/accounts/products/${sanitizeInput(id)}`,{
                         method:'PUT',
                         body:JSON.stringify({price,description,stock})
                     });
@@ -1588,7 +1608,7 @@
                     }
                 }catch(error){
                     hideLoading();
-                    showError('Network error');
+                    showError('Network error: ' + error.message);
                 }
             };
             
