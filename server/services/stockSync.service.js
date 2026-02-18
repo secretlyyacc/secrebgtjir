@@ -1,5 +1,4 @@
 // server/services/stockSync.service.js
-const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
 
@@ -7,6 +6,7 @@ class StockSyncService {
     constructor() {
         this.dbPath = path.join(__dirname, '../../data/GrowLyy.db');
         this.productPath = path.join(__dirname, '../../data/product.json');
+        this.accountsPath = path.join(__dirname, '../../data/accounts.json');
         this.logFile = path.join(__dirname, '../../logs/stock-sync.log');
     }
 
@@ -19,47 +19,41 @@ class StockSyncService {
         if (!fs.existsSync(logsDir)) {
             fs.mkdirSync(logsDir, { recursive: true });
         }
-        fs.appendFileSync(this.logFile, logMessage);
+        try {
+            fs.appendFileSync(this.logFile, logMessage);
+        } catch (e) {
+            // Ignore log file errors
+        }
     }
 
     async getAccountsCountByProduct() {
-        return new Promise((resolve, reject) => {
-            const db = new sqlite3.Database(this.dbPath, (err) => {
-                if (err) {
-                    this.log(`Database connection error: ${err.message}`, 'ERROR');
-                    reject(err);
+        try {
+            if (!fs.existsSync(this.accountsPath)) {
+                return {};
+            }
+
+            const accountsData = JSON.parse(fs.readFileSync(this.accountsPath, 'utf8'));
+            const stats = {};
+
+            accountsData.forEach(account => {
+                const productId = account.product_id;
+                if (!stats[productId]) {
+                    stats[productId] = { total: 0, available: 0, sold: 0 };
+                }
+                stats[productId].total++;
+                if (account.status === 'available') {
+                    stats[productId].available++;
+                } else if (account.status === 'sold') {
+                    stats[productId].sold++;
                 }
             });
 
-            const query = `
-                SELECT 
-                    product_id,
-                    COUNT(*) as total,
-                    SUM(CASE WHEN status = 'available' THEN 1 ELSE 0 END) as available,
-                    SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold
-                FROM accounts 
-                GROUP BY product_id
-            `;
-
-            db.all(query, [], (err, rows) => {
-                if (err) {
-                    this.log(`Query error: ${err.message}`, 'ERROR');
-                    reject(err);
-                } else {
-                    const stats = {};
-                    rows.forEach(row => {
-                        stats[row.product_id] = {
-                            total: row.total,
-                            available: row.available || 0,
-                            sold: row.sold || 0
-                        };
-                    });
-                    this.log(`Retrieved stats for ${rows.length} products from database`);
-                    resolve(stats);
-                }
-                db.close();
-            });
-        });
+            this.log(`Retrieved stats for ${Object.keys(stats).length} products from accounts.json`);
+            return stats;
+        } catch (error) {
+            this.log(`Error reading accounts: ${error.message}`, 'ERROR');
+            return {};
+        }
     }
 
     async updateProductJson(dbStats) {
@@ -140,6 +134,11 @@ class StockSyncService {
     async getDetailedStockReport() {
         try {
             const dbStats = await this.getAccountsCountByProduct();
+            
+            if (!fs.existsSync(this.productPath)) {
+                return { products: [] };
+            }
+
             const productData = JSON.parse(fs.readFileSync(this.productPath, 'utf8'));
             
             const report = {
@@ -164,7 +163,7 @@ class StockSyncService {
             return report;
         } catch (error) {
             this.log(`Error generating report: ${error.message}`, 'ERROR');
-            return null;
+            return { products: [] };
         }
     }
 }
