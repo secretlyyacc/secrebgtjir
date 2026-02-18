@@ -1,6 +1,7 @@
+// server.js
 require('dotenv').config();
-const jwt = require('jsonwebtoken')
-const { authenticateToken } = require('./server/middleware/auth');;
+const jwt = require('jsonwebtoken');
+const { authenticateToken } = require('./server/middleware/auth');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -90,8 +91,6 @@ const routeFiles = [
     { path: '/api/payment', file: 'payment' },
     { path: '/api/webhook', file: 'webhook' },
     { path: '/api/admin', file: 'admin' },
-  //  { path: '/pending', file: 'pending' },
-    //{ path: '/api/admin/redeem-codes', file: 'redeem-upload' }
 ];
 
 routeFiles.forEach(route => {
@@ -109,6 +108,10 @@ routeFiles.forEach(route => {
     }
 });
 
+// ==================== ACCOUNTS ROUTES (DENGAN PRODUCT UPDATE) ====================
+app.use('/api/admin/accounts', require('./server/routes/admin/accounts'));
+
+// ==================== AUTH ENDPOINTS ====================
 app.get('/api/admin/verify', authenticateToken, (req, res) => {
     res.json({
         success: true,
@@ -121,6 +124,34 @@ app.get('/api/admin/verify', authenticateToken, (req, res) => {
     });
 });
 
+// ==================== STOCK SYNC ENDPOINTS ====================
+app.post('/api/admin/stock/sync', authenticateToken, async (req, res) => {
+    try {
+        const result = await stockSync.syncStock();
+        res.json({
+            success: result.success,
+            message: result.success ? 'Stock synchronized successfully' : 'Sync failed',
+            updated: result.updated,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/admin/stock/status', authenticateToken, async (req, res) => {
+    try {
+        const report = await stockSync.getDetailedStockReport();
+        res.json({
+            success: true,
+            report
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== BOT ENDPOINTS ====================
 app.get('/api/bot/status', (req, res) => {
     try {
         const status = whatsappBot.getStatus();
@@ -137,33 +168,6 @@ app.get('/api/bot/status', (req, res) => {
             error: error.message,
             timestamp: new Date().toISOString()
         });
-    }
-});
-
-app.post('/api/admin/stock/sync', authenticateToken, async (req, res) => {
-    try {
-        const result = await stockSync.syncStock();
-        res.json({
-            success: result.success,
-            message: result.success ? 'Stock synchronized successfully' : 'Sync failed',
-            updated: result.updated,
-            error: result.error
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Endpoint untuk cek status stock
-app.get('/api/admin/stock/status', authenticateToken, async (req, res) => {
-    try {
-        const report = await stockSync.getDetailedStockReport();
-        res.json({
-            success: true,
-            report
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -272,6 +276,7 @@ app.post('/api/whatsapp/send-redeem', async (req, res) => {
     }
 });
 
+// ==================== PAKASIR ENDPOINTS ====================
 app.get('/api/pakasir/methods', (req, res) => {
     try {
         const methods = pakasirService.getPaymentMethods();
@@ -292,6 +297,7 @@ app.get('/api/pakasir/status', (req, res) => {
     });
 });
 
+// ==================== STATIC PAGES ====================
 app.get('/pending.html', (req, res) => {
     const pendingPath = path.join(__dirname, 'pending', 'pending.html');
     if (fs.existsSync(pendingPath)) {
@@ -323,21 +329,27 @@ app.get('/admin', (req, res) => {
     }
 });
 
+// ==================== PRODUCTS ENDPOINT ====================
 app.get('/api/roles', (req, res) => {
     try {
-        const roles = require('./data/product.json');
-        res.json(roles);
+        const rolesPath = path.join(__dirname, 'data', 'product.json');
+        if (fs.existsSync(rolesPath)) {
+            const roles = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+            res.json(roles);
+        } else {
+            res.status(404).json({ error: 'Product file not found' });
+        }
     } catch (error) {
         console.error('Error fetching roles data', { error: error.message });
         res.status(500).json({ error: 'Failed to fetch roles' });
     }
 });
 
+// ==================== ORDER DETAIL ENDPOINT ====================
 app.get('/api/order/:orderId', (req, res) => {
     const { orderId } = req.params;
     console.log('🔍 Looking for order:', orderId);
 
-    // Buat koneksi baru untuk setiap request (temporary fix)
     const tempDb = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
         if (err) {
             console.error('❌ Cannot open database:', err.message);
@@ -347,7 +359,6 @@ app.get('/api/order/:orderId', (req, res) => {
             });
         }
 
-        // Set timeout
         const timer = setTimeout(() => {
             console.error('❌ Order fetch timeout for:', orderId);
             tempDb.close();
@@ -379,7 +390,6 @@ app.get('/api/order/:orderId', (req, res) => {
                 });
             }
 
-            // Parse JSON fields
             try {
                 if (row.pakasirData) row.pakasirData = JSON.parse(row.pakasirData);
                 if (row.accountData) row.accountData = JSON.parse(row.accountData);
@@ -396,6 +406,7 @@ app.get('/api/order/:orderId', (req, res) => {
     });
 });
 
+// ==================== HEALTH ENDPOINTS ====================
 app.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
@@ -447,6 +458,7 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// ==================== 404 HANDLER ====================
 app.use((req, res) => {
     res.status(404).json({ 
         success: false, 
@@ -456,6 +468,7 @@ app.use((req, res) => {
     });
 });
 
+// ==================== ERROR HANDLER ====================
 app.use((error, req, res, next) => {
     log.error('Unhandled error:', error);
     res.status(500).json({
@@ -464,41 +477,8 @@ app.use((error, req, res, next) => {
         timestamp: new Date().toISOString()
     });
 });
-app.use('/api/admin/accounts', require('./server/routes/admin/accounts'));
 
-function getOrderCount() {
-    try {
-        const ordersPath = path.join(__dirname, 'data', 'orders.json');
-        if (fs.existsSync(ordersPath)) {
-            const orders = JSON.parse(fs.readFileSync(ordersPath, 'utf8'));
-            return orders.length;
-        }
-    } catch (error) {}
-    return 0;
-}
-
-function getCompletedCount() {
-    try {
-        const ordersPath = path.join(__dirname, 'data', 'orders.json');
-        if (fs.existsSync(ordersPath)) {
-            const orders = JSON.parse(fs.readFileSync(ordersPath, 'utf8'));
-            return orders.filter(o => o.status === 'completed').length;
-        }
-    } catch (error) {}
-    return 0;
-}
-
-function getPendingCount() {
-    try {
-        const ordersPath = path.join(__dirname, 'data', 'orders.json');
-        if (fs.existsSync(ordersPath)) {
-            const orders = JSON.parse(fs.readFileSync(ordersPath, 'utf8'));
-            return orders.filter(o => o.status === 'pending').length;
-        }
-    } catch (error) {}
-    return 0;
-}
-
+// ==================== CREATE DIRECTORIES ====================
 const publicDir = path.join(__dirname, 'public');
 if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
@@ -517,13 +497,17 @@ if (!fs.existsSync(pendingDir)) {
     log.info('✅ Created pending directory');
 }
 
+// ==================== CREATE DEFAULT FILES ====================
 const rolesPath = path.join(dataDir, 'product.json');
 if (!fs.existsSync(rolesPath)) {
     const defaultRoles = {
         roles: [
-            { id: 1, name: "Legendary", price: 100000, description: "Legendary Role", stock: 10 },
-            { id: 2, name: "Mythic", price: 250000, description: "Mythic Role", stock: 5 },
-            { id: 3, name: "Godly", price: 500000, description: "Godly Role", stock: 3 }
+            { id: "spotify_2_bulan", name: "Spotify 2 Bulan", price: "5000", description: "Spotify Premium 2 Bulan", image: "/img/role/spotify.png", role_id: 1, stock: "0" },
+            { id: "panel_do_10_droplet", name: "Panel Digital Ocean 10 Droplet", price: "40000", description: "Panel Digital Ocean dengan 10 Droplet", image: "/img/role/digitalocean.png", role_id: 2, stock: "0" },
+            { id: "panel_do_3_droplet", name: "Panel Digital Ocean 3 Droplet", price: "30000", description: "Panel Digital Ocean dengan 3 Droplet", image: "/img/role/digitalocean.png", role_id: 3, stock: "0" },
+            { id: "netflix_1_bulan", name: "Netflix 1 Bulan", price: "20000", description: "Netflix Premium 1 Bulan", image: "/img/role/netflix.png", role_id: 4, stock: "0" },
+            { id: "wetv_1_bulan", name: "WeTV 1 Bulan", price: "15000", description: "WeTV Premium 1 Bulan", image: "/img/role/wetv.jpg", role_id: 5, stock: "0" },
+            { id: "viu_trial", name: "VIU 1 Bulan", price: "15000", description: "VIU Premium 1 Bulan", image: "/img/role/viu.png", role_id: 6, stock: "0" }
         ]
     };
     fs.writeFileSync(rolesPath, JSON.stringify(defaultRoles, null, 2));
@@ -536,154 +520,7 @@ if (!fs.existsSync(ordersPath)) {
     log.info('✅ Created orders.json');
 }
 
-const pendingHtmlPath = path.join(pendingDir, 'pending.html');
-if (!fs.existsSync(pendingHtmlPath)) {
-    const pendingHtml = `<!DOCTYPE html>
-<html>
-<head>
-    <title>Payment Status - LyyShop ID</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-8">
-        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
-            <div class="text-6xl mb-4">⏳</div>
-            <h1 class="text-2xl font-bold mb-4">Payment Pending</h1>
-            <p class="text-gray-600 mb-2">Order ID: <span id="orderId">ORDER_ID_PLACEHOLDER</span></p>
-            <p class="text-gray-600 mb-6">Your payment is being processed.</p>
-            
-            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 text-left">
-                <p class="font-bold">📱 Payment Instructions:</p>
-                <p class="text-sm mt-2">1. Complete the payment using QRIS or Virtual Account</p>
-                <p class="text-sm">2. Wait for confirmation (usually 1-2 minutes)</p>
-                <p class="text-sm">3. Redeem code will be sent via email</p>
-            </div>
-            
-            <div class="space-y-3">
-                <button onclick="checkStatus()" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    🔄 Check Status
-                </button>
-                <a href="/" class="block w-full bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    🏠 Back to Home
-                </a>
-            </div>
-            
-            <div id="statusMessage" class="mt-4 text-sm text-gray-600"></div>
-        </div>
-    </div>
-    
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const orderId = urlParams.get('order') || 'ORDER_ID_PLACEHOLDER';
-        document.getElementById('orderId').textContent = orderId;
-        
-        async function checkStatus() {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.innerHTML = 'Checking status...';
-            
-            try {
-                const response = await fetch('/api/order/' + orderId);
-                const data = await response.json();
-                
-                if (data.success && data.order) {
-                    if (data.order.status === 'completed') {
-                        statusDiv.innerHTML = '✅ Payment completed! Check your email for redeem code.';
-                        statusDiv.className = 'mt-4 text-sm text-green-600 font-bold';
-                    } else if (data.order.status === 'pending') {
-                        statusDiv.innerHTML = '⏳ Payment still pending. Please complete your payment.';
-                        statusDiv.className = 'mt-4 text-sm text-yellow-600';
-                    } else {
-                        statusDiv.innerHTML = 'Status: ' + data.order.status;
-                        statusDiv.className = 'mt-4 text-sm text-gray-600';
-                    }
-                } else {
-                    statusDiv.innerHTML = '❌ Order not found';
-                    statusDiv.className = 'mt-4 text-sm text-red-600';
-                }
-            } catch (error) {
-                statusDiv.innerHTML = '❌ Error checking status';
-                statusDiv.className = 'mt-4 text-sm text-red-600';
-            }
-        }
-        
-        setTimeout(checkStatus, 3000);
-        setInterval(checkStatus, 10000);
-    </script>
-</body>
-</html>`;
-    fs.writeFileSync(pendingHtmlPath, pendingHtml);
-    log.info('✅ Created pending.html');
-}
-
-const scanHtmlPath = path.join(publicDir, 'scan.html');
-if (!fs.existsSync(scanHtmlPath)) {
-    const scanHtml = `<!DOCTYPE html>
-<html>
-<head>
-    <title>WhatsApp Scanner - LyyShop ID</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-8">
-        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
-            <h1 class="text-2xl font-bold mb-4">🤖 WhatsApp Scanner</h1>
-            <div id="qrContainer" class="bg-gray-50 p-4 rounded-lg mb-4">
-                <img id="qrImage" src="" alt="QR Code" class="mx-auto max-w-full hidden">
-                <div id="loadingText" class="text-gray-500">Loading QR code...</div>
-            </div>
-            <div id="status" class="text-sm mb-4"></div>
-            <button onclick="refreshQR()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Refresh QR
-            </button>
-        </div>
-    </div>
-    <script>
-        async function refreshQR() {
-            const qrImage = document.getElementById('qrImage');
-            const loadingText = document.getElementById('loadingText');
-            const statusDiv = document.getElementById('status');
-            
-            qrImage.classList.add('hidden');
-            loadingText.classList.remove('hidden');
-            statusDiv.innerHTML = 'Fetching QR code...';
-            
-            try {
-                const response = await fetch('/api/bot/qr');
-                const data = await response.json();
-                
-                if (data.success && data.qrCode) {
-                    qrImage.src = data.qrCode;
-                    qrImage.classList.remove('hidden');
-                    loadingText.classList.add('hidden');
-                    statusDiv.innerHTML = 'Scan this QR code with WhatsApp';
-                } else if (data.isReady) {
-                    qrImage.classList.add('hidden');
-                    loadingText.classList.add('hidden');
-                    statusDiv.innerHTML = '✅ Bot is already connected and ready!';
-                } else {
-                    qrImage.classList.add('hidden');
-                    loadingText.classList.remove('hidden');
-                    loadingText.innerHTML = data.message || 'Waiting for QR code...';
-                    statusDiv.innerHTML = '';
-                }
-            } catch (error) {
-                statusDiv.innerHTML = 'Error: ' + error.message;
-            }
-        }
-        
-        refreshQR();
-        setInterval(refreshQR, 5000);
-    </script>
-</body>
-</html>`;
-    fs.writeFileSync(scanHtmlPath, scanHtml);
-    log.info('✅ Created scan.html');
-}
-
+// ==================== START SERVERS ====================
 const httpServer = http.createServer(app);
 httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
     log.info(`🌐 HTTP Server running on port ${HTTP_PORT}`);
@@ -710,6 +547,7 @@ try {
     log.error('❌ Failed to start HTTPS server:', error.message);
 }
 
+// Initial stock sync
 (async () => {
     try {
         console.log('\n🔄 Initial stock synchronization...');
@@ -737,15 +575,9 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.log('📌 AVAILABLE ENDPOINTS:');
     console.log(`   🔗 Home: http://localhost:${PORT}/`);
     console.log(`   🔗 Admin Panel: http://localhost:${PORT}/admin`);
-    console.log(`   🔗 QR Scanner: http://localhost:${PORT}/scan`);
-    console.log(`   🔗 Bot Status: http://localhost:${PORT}/api/bot/status`);
-    console.log(`   🔗 Payment Methods: http://localhost:${PORT}/api/pakasir/methods`);
-    console.log(`   🔗 Webhook Health: http://localhost:${PORT}/api/webhook/health`);
-    console.log(`   🔗 Health Check: http://localhost:${PORT}/health`);
-    console.log(`   🔗 Statistics: http://localhost:${PORT}/api/stats`);
-    console.log('='.repeat(70));
-    console.log(`📧 Email Service: growlycs@gmail.com`);
-    console.log(`⏰ Started at: ${new Date().toLocaleString()}`);
+    console.log(`   🔗 Products: http://localhost:${PORT}/api/roles`);
+    console.log(`   🔗 Accounts: http://localhost:${PORT}/api/admin/accounts`);
+    console.log(`   🔗 Update Product: PUT /api/admin/accounts/products/:id`);
     console.log('='.repeat(70) + '\n');
 });
 
@@ -766,7 +598,3 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
-
-
-
-
