@@ -1,3 +1,4 @@
+// server/routes/admin/accounts.js
 const express = require('express');
 const router = express.Router();
 const { Account } = require('../../config/database');
@@ -64,7 +65,7 @@ router.post('/upload', async (req, res) => {
             const productIndex = rolesData.roles.findIndex(r => r.id === productId);
             if (productIndex !== -1) {
                 const stock = await Account.getStock(productId);
-                rolesData.roles[productIndex].stock = stock;
+                rolesData.roles[productIndex].stock = stock.toString();
                 fs.writeFileSync(rolesPath, JSON.stringify(rolesData, null, 2));
             }
         }
@@ -105,7 +106,7 @@ router.delete('/:id', async (req, res) => {
             const productIndex = rolesData.roles.findIndex(r => r.id === account.product_id);
             if (productIndex !== -1) {
                 const stock = await Account.getStock(account.product_id);
-                rolesData.roles[productIndex].stock = stock;
+                rolesData.roles[productIndex].stock = stock.toString();
                 fs.writeFileSync(rolesPath, JSON.stringify(rolesData, null, 2));
             }
         }
@@ -170,6 +171,64 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
         console.error('Update error:', error);
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update product (price, description, stock)
+router.put('/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { price, description, stock } = req.body;
+        
+        console.log(`📝 Updating product: ${id}`, { price, description, stock });
+        
+        const rolesPath = path.join(__dirname, '../../../data/product.json');
+        
+        if (!fs.existsSync(rolesPath)) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Product file not found' 
+            });
+        }
+        
+        const rolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+        const productIndex = rolesData.roles.findIndex(p => p.id === id);
+        
+        if (productIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Product not found' 
+            });
+        }
+        
+        if (price !== undefined) {
+            rolesData.roles[productIndex].price = price.toString();
+        }
+        
+        if (description !== undefined) {
+            rolesData.roles[productIndex].description = description;
+        }
+        
+        if (stock !== undefined) {
+            rolesData.roles[productIndex].stock = stock.toString();
+        }
+        
+        fs.writeFileSync(rolesPath, JSON.stringify(rolesData, null, 2));
+        
+        console.log(`✅ Product ${id} updated successfully`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Product updated successfully',
+            product: rolesData.roles[productIndex]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating product:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message || 'Failed to update product' 
+        });
     }
 });
 
