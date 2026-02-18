@@ -6,6 +6,7 @@ const fs = require('fs');
 const https = require('https');
 const http = require('http');
 const sqlite3 = require('sqlite3').verbose();
+const stockSync = require('./server/services/stockSync.service');
 
 const dbPath = path.join(__dirname, 'data', 'GrowLyy.db');
 
@@ -157,6 +158,33 @@ app.get('/api/bot/status', (req, res) => {
             error: error.message,
             timestamp: new Date().toISOString()
         });
+    }
+});
+
+app.post('/api/admin/stock/sync', authenticateToken, async (req, res) => {
+    try {
+        const result = await stockSync.syncStock();
+        res.json({
+            success: result.success,
+            message: result.success ? 'Stock synchronized successfully' : 'Sync failed',
+            updated: result.updated,
+            error: result.error
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint untuk cek status stock
+app.get('/api/admin/stock/status', authenticateToken, async (req, res) => {
+    try {
+        const report = await stockSync.getDetailedStockReport();
+        res.json({
+            success: true,
+            report
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -703,6 +731,16 @@ try {
     log.error('❌ Failed to start HTTPS server:', error.message);
 }
 
+(async () => {
+    try {
+        console.log('\n🔄 Initial stock synchronization...');
+        await stockSync.syncStock();
+        console.log('✅ Initial sync completed\n');
+    } catch (error) {
+        console.error('❌ Initial sync failed:', error.message);
+    }
+})();
+
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log('\n' + '='.repeat(70));
     console.log('🚀 LyyShop ID SERVER BERHASIL DIJALANKAN!');
@@ -749,4 +787,5 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
+
 
