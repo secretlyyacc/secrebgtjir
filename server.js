@@ -1,5 +1,6 @@
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken')
+const { authenticateToken } = require('../../middleware/auth');;
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
