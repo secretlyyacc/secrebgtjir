@@ -45,7 +45,6 @@
             overflow-x: hidden;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -61,7 +60,6 @@
             border-radius: 10px;
         }
 
-        /* Layout */
         .app-container {
             display: flex;
             min-height: 100vh;
@@ -69,7 +67,6 @@
             padding-bottom: var(--safe-area-inset-bottom);
         }
 
-        /* Sidebar - Desktop */
         .sidebar {
             width: 280px;
             background: rgba(10, 38, 71, 0.98);
@@ -108,7 +105,6 @@
             color: white;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             padding: 20px;
@@ -116,7 +112,6 @@
             max-height: 100vh;
         }
 
-        /* Mobile Bottom Navigation */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -155,11 +150,6 @@
             background: rgba(96, 165, 250, 0.1);
         }
 
-        .mobile-nav-item:active {
-            background: rgba(96, 165, 250, 0.2);
-        }
-
-        /* Glass Card */
         .glass-card {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(10px);
@@ -175,7 +165,6 @@
             transform: translateY(-2px);
         }
 
-        /* Buttons */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
             color: white;
@@ -236,7 +225,6 @@
             transform: translateY(-2px);
         }
 
-        /* Badge */
         .badge {
             padding: 4px 10px;
             border-radius: 20px;
@@ -251,7 +239,6 @@
         .badge-completed { background: #10b981; color: white; }
         .badge-cancelled { background: #ef4444; color: white; }
 
-        /* Form */
         .form-input {
             width: 100%;
             padding: 12px 16px;
@@ -279,7 +266,6 @@
             padding-right: 40px;
         }
 
-        /* Table */
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -306,7 +292,6 @@
             background: rgba(96, 165, 250, 0.05);
         }
 
-        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -344,7 +329,6 @@
             transform: translateY(0) scale(1);
         }
 
-        /* Stats Card */
         .stat-card {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -358,14 +342,12 @@
             transform: translateY(-2px);
         }
 
-        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
             gap: 16px;
         }
 
-        /* File Upload */
         .file-drop-area {
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 16px;
@@ -385,7 +367,6 @@
             background: rgba(96, 165, 250, 0.1);
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -415,7 +396,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Spinner */
         .spinner {
             width: 40px;
             height: 40px;
@@ -430,7 +410,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Responsive Breakpoints */
         @media (min-width: 769px) {
             .mobile-nav {
                 display: none;
@@ -502,7 +481,6 @@
             }
         }
 
-        /* Safe Area */
         @supports (padding-top: env(safe-area-inset-top)) {
             .sidebar {
                 padding-top: env(safe-area-inset-top);
@@ -512,7 +490,6 @@
             }
         }
 
-        /* Animations */
         .animate-slide-in {
             animation: slideIn 0.3s ease;
         }
@@ -540,7 +517,6 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -554,7 +530,6 @@
             }
         }
 
-        /* Chart Container - Fixed size to prevent lag */
         .chart-container {
             position: relative;
             width: 100%;
@@ -569,7 +544,6 @@
             }
         }
 
-        /* Content Sections */
         .content-section {
             display: none;
         }
@@ -578,7 +552,6 @@
             display: block;
         }
 
-        /* Filter Bar */
         .filter-bar {
             display: flex;
             flex-wrap: wrap;
@@ -599,7 +572,6 @@
             }
         }
 
-        /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -616,22 +588,6 @@
             }
         }
 
-        /* Cards Grid */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .cards-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-        }
-
-        /* Pagination */
         .pagination {
             display: flex;
             flex-wrap: wrap;
@@ -689,9 +645,7 @@
     </div>
     
     <div id="dashboard" class="hidden">
-        <!-- App Container -->
         <div class="app-container">
-            <!-- Desktop Sidebar -->
             <div class="sidebar">
                 <div class="p-4 border-b border-white/10">
                     <div class="flex items-center space-x-3">
@@ -717,9 +671,7 @@
                 </nav>
             </div>
 
-            <!-- Main Content -->
             <div class="main-content">
-                <!-- Dashboard Section -->
                 <div id="dashboardSection" class="content-section active">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">Dashboard Overview</h1>
                     
@@ -780,7 +732,6 @@
                     </div>
                 </div>
 
-                <!-- Orders Section -->
                 <div id="ordersSection" class="content-section">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">Order Management</h1>
                     
@@ -826,7 +777,6 @@
                     </div>
                 </div>
 
-                <!-- Accounts Section -->
                 <div id="accountsSection" class="content-section">
                     <div class="flex justify-between items-center mb-4">
                         <h1 class="text-xl sm:text-2xl font-bold">Account Stock</h1>
@@ -889,13 +839,11 @@
                     </div>
                 </div>
 
-                <!-- Products Section -->
                 <div id="productsSection" class="content-section">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">Product Management</h1>
                     <div id="productsGrid" class="products-grid"></div>
                 </div>
 
-                <!-- Stock Sync Section -->
                 <div id="stockSyncSection" class="content-section">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">Stock Synchronization</h1>
                     
@@ -922,7 +870,6 @@
                     </div>
                 </div>
 
-                <!-- Settings Section -->
                 <div id="settingsSection" class="content-section">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">System Settings</h1>
                     <div class="glass-card p-4">
@@ -948,7 +895,6 @@
             </div>
         </div>
 
-        <!-- Mobile Bottom Navigation -->
         <div class="mobile-nav">
             <button onclick="showSection('dashboard')" class="mobile-nav-item" id="mobileDashboardBtn">
                 <i class="fas fa-chart-pie"></i>
@@ -975,7 +921,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="uploadModal" class="modal-overlay">
         <div class="modal-content">
             <span class="modal-close" onclick="hideUploadModal()">&times;</span>
@@ -1428,7 +1373,6 @@
                 
                 const completed=stats.completedOrders||0;
                 const pending=stats.pendingOrders||0;
-                const total=completed+pending;
                 
                 state.revenueChart=new Chart(ctx,{
                     type:'doughnut',
@@ -1948,6 +1892,7 @@
                         hideAddAccountModal();
                         showToast('Account added');
                         loadAccounts(state.currentAccountPage);
+                        loadDashboardData();
                     }else{
                         showError(data.error||'Failed');
                     }
