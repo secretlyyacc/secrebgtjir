@@ -1,6 +1,6 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken')
-const { authenticateToken } = require('../../middleware/auth');;
+const { authenticateToken } = require('./server/middleware/auth');;
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -766,6 +766,7 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
+
 
 
 
