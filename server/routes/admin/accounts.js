@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs');
 
 // ==================== PRODUCT UPDATE ENDPOINT ====================
-// LETAKKAN INI PALING ATAS SEBELUM ROUTE LAIN!
 router.put('/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -96,7 +95,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Upload accounts from JSON
 router.post('/upload', async (req, res) => {
     try {
         const { productId, accounts } = req.body;
@@ -140,7 +138,6 @@ router.post('/upload', async (req, res) => {
     }
 });
 
-// Delete account
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -177,7 +174,6 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// Get stock stats
 router.get('/stats', async (req, res) => {
     try {
         const stats = await Account.getStats();
@@ -188,7 +184,6 @@ router.get('/stats', async (req, res) => {
     }
 });
 
-// Get single account by id
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -205,7 +200,6 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Update account
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
