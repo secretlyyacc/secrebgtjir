@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>LyyShop ID - Admin Panel</title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="/public/img/logo.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/public/img/logo.png">
     <link rel="apple-touch-icon" href="/public/img/logo.png">
     
-    <!-- Security Headers (akan diproses oleh server) -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self'">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
@@ -49,7 +47,6 @@
             padding-bottom: var(--safe-area-inset-bottom);
         }
 
-        /* Custom Scrollbar - Professional */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -70,7 +67,6 @@
             background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
         }
 
-        /* Glassmorphism - Professional */
         .glass {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
@@ -94,7 +90,6 @@
             transform: translateY(-2px);
         }
 
-        /* Button Styles - Professional */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
             color: white;
@@ -185,7 +180,6 @@
             box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
         }
 
-        /* Badge Styles */
         .badge {
             padding: 6px 14px;
             border-radius: 30px;
@@ -216,7 +210,6 @@
             color: white;
         }
 
-        /* Form Inputs - Professional */
         .form-input {
             width: 100%;
             padding: 14px 18px;
@@ -257,7 +250,6 @@
             padding: 12px;
         }
 
-        /* Table Styles - Responsive */
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -291,7 +283,6 @@
             background: rgba(96, 165, 250, 0.1);
         }
 
-        /* Modal Styles - Professional */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -363,7 +354,6 @@
             transform: rotate(90deg) scale(0.95);
         }
 
-        /* File Upload Area */
         .file-drop-area {
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 20px;
@@ -385,7 +375,6 @@
             transform: scale(1.02);
         }
 
-        /* Toast Notifications */
         .toast {
             position: fixed;
             bottom: calc(20px + var(--safe-area-inset-bottom));
@@ -423,7 +412,6 @@
             }
         }
 
-        /* Loading Spinner */
         .spinner {
             width: 48px;
             height: 48px;
@@ -440,7 +428,6 @@
             }
         }
 
-        /* Sidebar - Professional */
         .sidebar {
             width: 280px;
             height: 100vh;
@@ -490,7 +477,6 @@
             min-height: 100vh;
         }
 
-        /* Stat Cards */
         .stat-card {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
@@ -504,14 +490,12 @@
             transform: translateY(-4px);
         }
 
-        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
             gap: clamp(16px, 2vw, 24px);
         }
 
-        /* Chart Container */
         .chart-container {
             position: relative;
             width: 100%;
@@ -519,7 +503,6 @@
             min-height: 300px;
         }
 
-        /* Responsive Breakpoints - Professional */
         @media (max-width: 1024px) {
             .sidebar {
                 width: 240px;
@@ -572,16 +555,7 @@
                 font-size: 0.7rem;
             }
         }
-        
-        @media (max-width: 360px) {
-            .table-header,
-            .table-cell {
-                padding: 8px 10px;
-                font-size: 0.75rem;
-            }
-        }
 
-        /* Safe Area Support for iOS */
         @supports (padding-top: env(safe-area-inset-top)) {
             .sidebar {
                 padding-top: env(safe-area-inset-top);
@@ -592,7 +566,6 @@
             }
         }
 
-        /* Touch Optimizations */
         @media (hover: none) and (pointer: coarse) {
             .btn-primary:hover,
             .btn-secondary:hover,
@@ -620,7 +593,6 @@
             }
         }
 
-        /* Animation Classes */
         .animate-slide-in {
             animation: slideIn 0.3s ease;
         }
@@ -664,7 +636,6 @@
             }
         }
 
-        /* Prevent text selection on interactive elements */
         .btn-primary,
         .btn-secondary,
         .btn-danger,
