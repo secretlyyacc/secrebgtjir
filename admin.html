@@ -67,14 +67,6 @@
             background: linear-gradient(135deg, var(--primary-30), var(--primary-10));
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-        }
-        
         .glass-card {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(10px);
@@ -107,9 +99,6 @@
             font-size: 0.95rem;
             position: relative;
             overflow: hidden;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
         
         .btn-primary::before {
@@ -131,16 +120,7 @@
             transform: translateY(-3px);
             box-shadow: 0 15px 30px rgba(96, 165, 250, 0.3);
         }
-        
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
+
         .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             color: white;
@@ -150,34 +130,12 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             cursor: pointer;
             transition: all 0.3s ease;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 0.95rem;
         }
         
         .btn-secondary:hover:not(:disabled) {
             background: rgba(255, 255, 255, 0.1);
             border-color: var(--primary-10);
             transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            color: white;
-            padding: 14px 28px;
-            border-radius: 14px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-danger:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
         }
 
         .badge {
@@ -187,28 +145,12 @@
             font-weight: 600;
             display: inline-block;
             white-space: nowrap;
-            letter-spacing: 0.3px;
         }
         
-        .badge-pending {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .badge-paid {
-            background: var(--primary-10);
-            color: white;
-        }
-        
-        .badge-completed {
-            background: #10b981;
-            color: white;
-        }
-        
-        .badge-cancelled {
-            background: #ef4444;
-            color: white;
-        }
+        .badge-pending { background: #f59e0b; color: white; }
+        .badge-paid { background: var(--primary-10); color: white; }
+        .badge-completed { background: #10b981; color: white; }
+        .badge-cancelled { background: #ef4444; color: white; }
 
         .form-input {
             width: 100%;
@@ -219,8 +161,6 @@
             color: white;
             transition: all 0.3s ease;
             font-size: 0.95rem;
-            -webkit-appearance: none;
-            appearance: none;
         }
         
         .form-input:focus {
@@ -229,11 +169,7 @@
             background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
         }
-        
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-        
+
         select.form-input {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2360a5fa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
@@ -241,20 +177,11 @@
             background-repeat: no-repeat;
             background-size: 20px;
             padding-right: 48px;
-            cursor: pointer;
-        }
-        
-        select.form-input option {
-            background: var(--primary-60);
-            color: white;
-            padding: 12px;
         }
 
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            margin: 0 -4px;
-            padding: 0 4px;
         }
         
         .table-header {
@@ -265,18 +192,12 @@
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.5);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            letter-spacing: 0.5px;
         }
         
         .table-cell {
             padding: 16px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.9rem;
-        }
-        
-        .table-row {
-            transition: all 0.2s ease;
-            cursor: pointer;
         }
         
         .table-row:hover {
@@ -288,7 +209,6 @@
             inset: 0;
             background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -297,8 +217,6 @@
             visibility: hidden;
             transition: all 0.3s ease;
             padding: 16px;
-            padding-top: var(--safe-area-inset-top);
-            padding-bottom: var(--safe-area-inset-bottom);
         }
         
         .modal-overlay.active {
@@ -316,10 +234,7 @@
             max-height: 90vh;
             overflow-y: auto;
             transform: translateY(20px) scale(0.95);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
-            position: relative;
-            -webkit-overflow-scrolling: touch;
+            transition: all 0.4s ease;
         }
         
         .modal-overlay.active .modal-content {
@@ -333,7 +248,6 @@
             color: white;
             font-size: 28px;
             cursor: pointer;
-            transition: all 0.3s ease;
             width: 44px;
             height: 44px;
             display: flex;
@@ -341,17 +255,11 @@
             justify-content: center;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
-            -webkit-tap-highlight-color: transparent;
         }
         
         .modal-close:hover {
             color: var(--primary-10);
             transform: rotate(90deg);
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .modal-close:active {
-            transform: rotate(90deg) scale(0.95);
         }
 
         .file-drop-area {
@@ -361,7 +269,6 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            -webkit-tap-highlight-color: transparent;
         }
         
         .file-drop-area:hover {
@@ -386,14 +293,11 @@
             border-radius: 16px;
             background: rgba(10, 38, 71, 0.98);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--primary-10);
             color: white;
             z-index: 2000;
-            animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInUp 0.3s ease;
             text-align: center;
-            font-weight: 500;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
         .toast.error {
@@ -402,14 +306,8 @@
         }
         
         @keyframes slideInUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .spinner {
@@ -423,9 +321,7 @@
         }
         
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
         .sidebar {
@@ -436,12 +332,10 @@
             top: 0;
             background: rgba(10, 38, 71, 0.98);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border-right: 1px solid rgba(255, 255, 255, 0.05);
             overflow-y: auto;
             z-index: 100;
             padding-top: var(--safe-area-inset-top);
-            -webkit-overflow-scrolling: touch;
         }
         
         .sidebar-link {
@@ -453,16 +347,11 @@
             border-left: 3px solid transparent;
             gap: 14px;
             font-size: 0.95rem;
-            -webkit-tap-highlight-color: transparent;
         }
         
         .sidebar-link:hover {
             background: rgba(96, 165, 250, 0.1);
             color: white;
-        }
-        
-        .sidebar-link:active {
-            background: rgba(96, 165, 250, 0.2);
         }
         
         .sidebar-link.active {
@@ -504,12 +393,8 @@
         }
 
         @media (max-width: 1024px) {
-            .sidebar {
-                width: 240px;
-            }
-            .main-content {
-                margin-left: 240px;
-            }
+            .sidebar { width: 240px; }
+            .main-content { margin-left: 240px; }
         }
         
         @media (max-width: 768px) {
@@ -518,130 +403,43 @@
                 height: auto;
                 position: relative;
                 border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             }
-            .main-content {
-                margin-left: 0;
-            }
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-            .table-header,
-            .table-cell {
-                padding: 12px 16px;
-                font-size: 0.85rem;
-            }
-            .stat-card {
-                padding: 16px;
-            }
+            .main-content { margin-left: 0; }
+            .products-grid { grid-template-columns: 1fr; }
+            .table-header, .table-cell { padding: 12px 16px; font-size: 0.85rem; }
         }
         
         @media (max-width: 480px) {
-            .btn-primary,
-            .btn-secondary {
-                padding: 12px 20px;
-                font-size: 0.9rem;
-            }
-            .modal-content {
-                padding: 20px;
-            }
-            .table-header,
-            .table-cell {
-                padding: 10px 12px;
-                font-size: 0.8rem;
-            }
-            .badge {
-                padding: 4px 10px;
-                font-size: 0.7rem;
-            }
-        }
-
-        @supports (padding-top: env(safe-area-inset-top)) {
-            .sidebar {
-                padding-top: env(safe-area-inset-top);
-            }
-            .main-content {
-                padding-left: env(safe-area-inset-left);
-                padding-right: env(safe-area-inset-right);
-            }
+            .btn-primary, .btn-secondary { padding: 12px 20px; font-size: 0.9rem; }
+            .modal-content { padding: 20px; }
+            .table-header, .table-cell { padding: 10px 12px; font-size: 0.8rem; }
         }
 
         @media (hover: none) and (pointer: coarse) {
-            .btn-primary:hover,
-            .btn-secondary:hover,
-            .btn-danger:hover,
-            .sidebar-link:hover,
-            .stat-card:hover {
-                transform: none;
-            }
-            
-            .btn-primary:active,
-            .btn-secondary:active,
-            .btn-danger:active,
-            .sidebar-link:active,
-            .stat-card:active {
-                transform: scale(0.98);
-                opacity: 0.9;
-            }
-            
-            .table-row:hover {
-                background: transparent;
-            }
-            
-            .table-row:active {
-                background: rgba(96, 165, 250, 0.1);
-            }
+            .btn-primary:hover, .btn-secondary:hover, .sidebar-link:hover, .stat-card:hover { transform: none; }
+            .btn-primary:active, .btn-secondary:active, .sidebar-link:active, .stat-card:active { transform: scale(0.98); }
         }
 
-        .animate-slide-in {
-            animation: slideIn 0.3s ease;
-        }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .animate-scale-in {
-            animation: scaleIn 0.3s ease;
-        }
+        .animate-slide-in { animation: slideIn 0.3s ease; }
+        .animate-fade-in { animation: fadeIn 0.3s ease; }
+        .animate-scale-in { animation: scaleIn 0.3s ease; }
         
         @keyframes slideIn {
-            from {
-                transform: translateX(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         @keyframes scaleIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
-        .btn-primary,
-        .btn-secondary,
-        .btn-danger,
-        .sidebar-link,
-        .modal-close,
-        [onclick] {
+        .btn-primary, .btn-secondary, .btn-danger, .sidebar-link, .modal-close, [onclick] {
             -webkit-user-select: none;
             user-select: none;
         }
@@ -670,7 +468,7 @@
                     <i class="fas fa-sign-in-alt mr-2"></i> Login
                 </button>
             </form>
-            <div id="loginError" class="mt-4 p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm hidden animate-fade-in"></div>
+            <div id="loginError" class="mt-4 p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm hidden"></div>
         </div>
     </div>
     
@@ -693,6 +491,8 @@
                 <a href="#" onclick="showSection('accounts')" class="sidebar-link"><i class="fas fa-database w-6"></i><span class="flex-1">Account Stock</span><span id="stockBadge" class="bg-green-500 text-xs px-2 py-1 rounded-full ml-auto">0</span></a>
                 <a href="#" onclick="showSection('products')" class="sidebar-link"><i class="fas fa-box w-6"></i><span class="flex-1">Products</span></a>
                 <a href="#" onclick="showSection('settings')" class="sidebar-link"><i class="fas fa-cog w-6"></i><span class="flex-1">Settings</span></a>
+                <div class="border-t border-white/10 my-4"></div>
+                <a href="#" onclick="showSection('stockSync')" class="sidebar-link"><i class="fas fa-sync-alt w-6"></i><span class="flex-1">Stock Sync</span></a>
                 <div class="border-t border-white/10 my-4"></div>
                 <a href="#" onclick="logout()" class="sidebar-link text-red-400"><i class="fas fa-sign-out-alt w-6"></i><span class="flex-1">Logout</span></a>
             </nav>
@@ -723,7 +523,7 @@
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 glass-card p-6 animate-fade-in">
-                        <h3 class="text-lg font-semibold mb-6">Revenue Overview</h3>
+                        <h3 class="text-lg font-semibold mb-6">Revenue Distribution</h3>
                         <div class="chart-container">
                             <canvas id="revenueChart"></canvas>
                         </div>
@@ -752,9 +552,7 @@
                                 </tr>
                             </thead>
                             <tbody id="recentOrdersTable">
-                                <tr>
-                                    <td colspan="4" class="text-center py-8 text-gray-400">No orders available</td>
-                                </tr>
+                                <tr><td colspan="4" class="text-center py-8 text-gray-400">No orders available</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -798,9 +596,7 @@
                                 </tr>
                             </thead>
                             <tbody id="ordersTable">
-                                <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-400">No orders available</td>
-                                </tr>
+                                <tr><td colspan="7" class="text-center py-8 text-gray-400">No orders available</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -862,9 +658,7 @@
                                 </tr>
                             </thead>
                             <tbody id="accountsTable">
-                                <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-400">No accounts available</td>
-                                </tr>
+                                <tr><td colspan="7" class="text-center py-8 text-gray-400">No accounts available</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -875,6 +669,32 @@
             <div id="productsSection" class="hidden space-y-6">
                 <h1 class="text-2xl sm:text-3xl font-bold animate-slide-in">Product Management</h1>
                 <div id="productsGrid" class="products-grid"></div>
+            </div>
+            
+            <div id="stockSyncSection" class="hidden space-y-6">
+                <h1 class="text-2xl sm:text-3xl font-bold animate-slide-in">Stock Synchronization</h1>
+                
+                <div class="glass-card p-6 animate-slide-in">
+                    <div class="flex flex-col gap-6">
+                        <div class="bg-white/5 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold mb-4">Manual Sync</h3>
+                            <p class="text-gray-400 text-sm mb-6">Synchronize stock between database and product.json</p>
+                            <button onclick="syncStock()" class="btn-primary w-full sm:w-auto px-8">
+                                <i class="fas fa-sync-alt mr-2"></i> Sync Now
+                            </button>
+                        </div>
+                        
+                        <div class="bg-white/5 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold mb-4">Stock Report</h3>
+                            <div id="stockReport" class="space-y-3">
+                                <p class="text-gray-400">Click refresh to load report</p>
+                            </div>
+                            <button onclick="loadStockReport()" class="btn-secondary w-full sm:w-auto px-8 mt-4">
+                                <i class="fas fa-chart-bar mr-2"></i> Refresh Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div id="settingsSection" class="hidden space-y-6">
@@ -891,7 +711,7 @@
                         </div>
                         <div>
                             <label class="block text-sm text-gray-400 mb-2">WhatsApp Number</label>
-                            <input type="text" id="whatsappNumber" class="form-input" value="6281234567890" maxlength="15" pattern="[0-9]+">
+                            <input type="text" id="whatsappNumber" class="form-input" value="6282118028950" maxlength="15">
                         </div>
                         <button onclick="saveSettings()" class="btn-primary w-full sm:w-auto px-8">
                             <i class="fas fa-save mr-2"></i> Save Settings
@@ -1305,15 +1125,15 @@
                     if(data.stockStatus)updateStockStatus(data.stockStatus);
                     
                     updateRevenueChart(data.revenueData||{
-                        labels:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
-                        values:[2500000,3200000,2800000,4100000,3900000,5200000,4800000]
+                        labels:['Completed','Pending','Cancelled'],
+                        values:[65,25,10]
                     });
                     
                 }catch(error){
                     console.error('Dashboard error:',error);
                     updateRevenueChart({
-                        labels:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
-                        values:[2500000,3200000,2800000,4100000,3900000,5200000,4800000]
+                        labels:['Completed','Pending','Cancelled'],
+                        values:[65,25,10]
                     });
                 }
             }
@@ -1364,58 +1184,42 @@
                 const ctx=document.getElementById('revenueChart').getContext('2d');
                 if(state.revenueChart)state.revenueChart.destroy();
                 
-                const chartData={
-                    labels:data.labels||['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
-                    values:data.values||[2500000,3200000,2800000,4100000,3900000,5200000,4800000]
-                };
-                
                 state.revenueChart=new Chart(ctx,{
-                    type:'line',
+                    type:'doughnut',
                     data:{
-                        labels:chartData.labels,
+                        labels:data.labels||['Completed','Pending','Cancelled'],
                         datasets:[{
-                            label:'Revenue (IDR)',
-                            data:chartData.values,
-                            borderColor:'#60a5fa',
-                            backgroundColor:'rgba(96,165,250,0.1)',
-                            borderWidth:3,
-                            pointBackgroundColor:'#60a5fa',
-                            pointBorderColor:'white',
-                            pointBorderWidth:2,
-                            pointRadius:4,
-                            pointHoverRadius:6,
-                            tension:0.4,
-                            fill:true
+                            data:data.values||[65,25,10],
+                            backgroundColor:[
+                                '#10b981',
+                                '#f59e0b',
+                                '#ef4444'
+                            ],
+                            borderColor:'white',
+                            borderWidth:2,
+                            hoverOffset:4
                         }]
                     },
                     options:{
                         responsive:true,
                         maintainAspectRatio:false,
                         plugins:{
-                            legend:{display:false},
+                            legend:{
+                                position:'bottom',
+                                labels:{
+                                    color:'white',
+                                    font:{size:12}
+                                }
+                            },
                             tooltip:{
                                 callbacks:{
                                     label:function(context){
-                                        return `Revenue: IDR ${context.raw.toLocaleString('id-ID')}`;
+                                        return `${context.label}: ${context.raw}%`;
                                     }
                                 }
                             }
                         },
-                        scales:{
-                            y:{
-                                grid:{color:'rgba(255,255,255,0.1)'},
-                                ticks:{
-                                    color:'white',
-                                    callback:function(value){
-                                        return 'IDR '+value.toLocaleString('id-ID');
-                                    }
-                                }
-                            },
-                            x:{
-                                grid:{display:false},
-                                ticks:{color:'white'}
-                            }
-                        },
+                        cutout:'60%',
                         animation:{duration:1000}
                     }
                 });
@@ -1457,12 +1261,12 @@
                     const safeDesc=escapeHtml(p.description||'No description');
                     const price=Number(p.price||0);
                     return `
-                        <div class="glass-card p-6 hover-lift">
+                        <div class="glass-card p-6">
                             <h3 class="text-xl font-bold mb-2">${safeName}</h3>
                             <p class="text-gray-400 mb-4 text-lg">Rp ${price.toLocaleString('id-ID')}</p>
-                            <p class="text-sm text-gray-500 mb-5 line-clamp-2">${safeDesc}</p>
+                            <p class="text-sm text-gray-500 mb-5">${safeDesc}</p>
                             <div class="space-y-4">
-                                <input type="number" id="price_${safeId}" value="${price}" class="form-input" placeholder="Price" min="0" step="1">
+                                <input type="number" id="price_${safeId}" value="${price}" class="form-input" placeholder="Price" min="0">
                                 <textarea id="desc_${safeId}" class="form-input" placeholder="Description" rows="3">${safeDesc}</textarea>
                                 <button onclick="updateProduct('${safeId}')" class="btn-primary">Update Product</button>
                             </div>
@@ -1597,10 +1401,6 @@
                                 <p><span class="text-gray-400">Status:</span> 
                                     <span class="badge ${a.status==='available'?'badge-paid':'badge-completed'} ml-2">${escapeHtml(a.status)}</span>
                                 </p>
-                                <p><span class="text-gray-400">Created:</span> <span class="text-white">${new Date(a.created_at).toLocaleString()}</span></p>
-                                ${a.sold_at?`<p><span class="text-gray-400">Sold At:</span> <span class="text-white">${new Date(a.sold_at).toLocaleString()}</span></p>`:''}
-                                ${a.sold_to?`<p><span class="text-gray-400">Sold To:</span> <span class="text-white">${escapeHtml(a.sold_to)}</span></p>`:''}
-                                ${a.order_id?`<p><span class="text-gray-400">Order ID:</span> <span class="text-white font-mono">${escapeHtml(a.order_id)}</span></p>`:''}
                             </div>
                         `;
                         document.getElementById('viewAccountModal').classList.add('active');
@@ -1990,6 +1790,54 @@
                 }
             });
             
+            window.syncStock=async function(){
+                showLoading('Syncing stock...');
+                try{
+                    const res=await secureFetch('/api/admin/stock/sync',{method:'POST'});
+                    if(!res)return;
+                    const data=await res.json();
+                    hideLoading();
+                    if(data.success){
+                        showToast(data.message);
+                        loadDashboardData();
+                        loadStockReport();
+                    }else{
+                        showError(data.error||'Sync failed');
+                    }
+                }catch(error){
+                    hideLoading();
+                    showError('Network error');
+                }
+            };
+            
+            window.loadStockReport=async function(){
+                try{
+                    const res=await secureFetch('/api/admin/stock/status');
+                    if(!res)return;
+                    const data=await res.json();
+                    if(data.success){
+                        const report=data.report;
+                        const html=report.products.map(p=>`
+                            <div class="bg-white/5 rounded-lg p-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">${escapeHtml(p.name)}</span>
+                                    <span class="${p.needsUpdate?'text-yellow-400':'text-green-400'}">
+                                        ${p.stockInJson} → ${p.actualAvailable}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>Total: ${p.totalAccounts}</span>
+                                    <span>Sold: ${p.soldAccounts}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('stockReport').innerHTML=html||'<p class="text-gray-400">No products found</p>';
+                    }
+                }catch(error){
+                    console.error('Failed to load stock report');
+                }
+            };
+            
             window.saveSettings=async function(){
                 const settings={
                     shopName:sanitizeInput(document.getElementById('shopName').value),
@@ -2021,25 +1869,24 @@
             };
             
             window.showSection=function(section){
-                ['dashboardSection','ordersSection','accountsSection','productsSection','settingsSection'].forEach(id=>{
+                ['dashboardSection','ordersSection','accountsSection','productsSection','stockSyncSection','settingsSection'].forEach(id=>{
                     document.getElementById(id).classList.add('hidden');
                 });
                 if(section==='dashboard'){
                     document.getElementById('dashboardSection').classList.remove('hidden');
                     loadDashboardData();
-                }
-                if(section==='orders'){
+                }else if(section==='orders'){
                     document.getElementById('ordersSection').classList.remove('hidden');
                     loadOrders(1);
-                }
-                if(section==='accounts'){
+                }else if(section==='accounts'){
                     document.getElementById('accountsSection').classList.remove('hidden');
                     loadAccounts(1);
-                }
-                if(section==='products'){
+                }else if(section==='products'){
                     document.getElementById('productsSection').classList.remove('hidden');
-                }
-                if(section==='settings'){
+                }else if(section==='stockSync'){
+                    document.getElementById('stockSyncSection').classList.remove('hidden');
+                    loadStockReport();
+                }else if(section==='settings'){
                     document.getElementById('settingsSection').classList.remove('hidden');
                 }
                 document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
