@@ -310,6 +310,11 @@
             left: 100%;
         }
 
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-secondary {
             background: transparent;
             color: white;
@@ -885,7 +890,7 @@
             </div>
             
             <!-- Products Grid -->
-            <div id="productContainer" class="products-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+            <div id="productContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
                 <!-- Products will be loaded here via JavaScript -->
             </div>
         </section>
@@ -1178,23 +1183,39 @@
                 showLoading(true);
                 document.getElementById('errorContainer').classList.add('hidden');
                 
-                const res = await fetch('/api/roles');
-                if (!res.ok) throw new Error('Failed to load products');
+                // Gunakan fetch dengan mode 'cors' dan tambahkan cache control
+                const res = await fetch('/api/roles', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-cache'
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
                 
                 const data = await res.json();
+                console.log('Products loaded:', data);
+                
                 allProducts = data.roles || [];
                 
+                // Category detection
                 allProducts = allProducts.map(product => {
                     let category = 'game';
                     const name = (product.name || '').toLowerCase();
                     const desc = (product.description || '').toLowerCase();
                     
-                    if (name.includes('netflix') || name.includes('viu') || desc.includes('streaming') || name.includes('disney') || name.includes('hbo') || name.includes('prime')) {
+                    if (name.includes('netflix') || name.includes('viu') || name.includes('wetv') || desc.includes('streaming') || name.includes('disney') || name.includes('hbo') || name.includes('prime')) {
                         category = 'streaming';
                     } else if (name.includes('spotify') || name.includes('music') || name.includes('joox') || name.includes('langit musik') || name.includes('youtube music')) {
                         category = 'music';
                     } else if (name.includes('trial') || name.includes('coba') || desc.includes('trial') || name.includes('free')) {
                         category = 'trial';
+                    } else if (name.includes('panel') || name.includes('digital') || name.includes('droplet')) {
+                        category = 'game';
                     }
                     
                     return { ...product, category };
@@ -1206,7 +1227,7 @@
             } catch (error) {
                 console.error('Error loading products:', error);
                 document.getElementById('errorContainer').classList.remove('hidden');
-                showToast('Failed to load products', 'error');
+                showToast('Failed to load products: ' + error.message, 'error');
             } finally {
                 showLoading(false);
             }
@@ -1221,7 +1242,7 @@
                     "position": index + 1,
                     "name": product.name,
                     "description": product.description || product.name,
-                    "image": product.image || '',
+                    "image": product.image || '/img/logo.png',
                     "offers": {
                         "@type": "Offer",
                         "price": product.price,
@@ -1231,7 +1252,10 @@
                 }))
             };
             
-            document.getElementById('productSchema').textContent = JSON.stringify(productSchema);
+            const schemaElement = document.getElementById('productSchema');
+            if (schemaElement) {
+                schemaElement.textContent = JSON.stringify(productSchema);
+            }
         }
 
         function handleImageError(img) {
