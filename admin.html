@@ -572,20 +572,29 @@
             }
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+        .category-pill {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 4px;
         }
 
-        @media (max-width: 480px) {
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .action-buttons button {
-                width: 100%;
-            }
+        .category-pill:hover {
+            background: var(--primary-30);
+            border-color: var(--primary-10);
+        }
+
+        .category-pill.active {
+            background: var(--primary-10);
+            border-color: var(--primary-10);
+            color: white;
         }
 
         .pagination {
@@ -841,6 +850,15 @@
 
                 <div id="productsSection" class="content-section">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">Product Management</h1>
+                    
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button class="category-pill active" data-category="all">All Products</button>
+                        <button class="category-pill" data-category="spotify">🎵 Spotify</button>
+                        <button class="category-pill" data-category="netflix">📺 Netflix</button>
+                        <button class="category-pill" data-category="wetv">📺 WeTV</button>
+                        <button class="category-pill" data-category="panel">🖥️ Panel</button>
+                    </div>
+                    
                     <div id="productsGrid" class="products-grid"></div>
                 </div>
 
@@ -1198,6 +1216,15 @@
                     showLoginScreen();
                 }
                 loadProductsForDropdown();
+                
+                document.querySelectorAll('.category-pill').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        filterProducts(this.dataset.category);
+                    });
+                });
+                
                 ['click','mousemove','keypress','scroll','touchstart'].forEach(event=>{
                     document.addEventListener(event,updateLastActivity);
                 });
@@ -1408,16 +1435,47 @@
                 });
             }
             
+            function filterProducts(category){
+                if(category==='all'){
+                    displayProducts(state.allProducts);
+                }else{
+                    const filtered=state.allProducts.filter(p=>{
+                        if(category==='spotify') return p.id.includes('spotify');
+                        if(category==='netflix') return p.id.includes('netflix');
+                        if(category==='wetv') return p.id.includes('wetv');
+                        if(category==='panel') return p.id.includes('panel');
+                        return true;
+                    });
+                    displayProducts(filtered);
+                }
+            }
+            
             async function loadProductsForDropdown(){
                 try{
                     const res=await secureFetch('/api/roles');
                     if(!res)return;
                     const data=await res.json();
-                    state.allProducts=(data.roles||[]).map(p=>({
-                        ...p,
-                        name:escapeHtml(p.name),
-                        id:sanitizeInput(p.id)
-                    }));
+                    
+                    const stockRes=await secureFetch('/api/admin/accounts/stats');
+                    let stockData=null;
+                    if(stockRes&&stockRes.ok){
+                        stockData=await stockRes.json();
+                    }
+                    
+                    state.allProducts=(data.roles||[]).map(p=>{
+                        let stock=parseInt(p.stock)||0;
+                        if(stockData&&stockData.stats){
+                            const productStock=stockData.products?.find(pr=>pr.id===p.id);
+                            if(productStock) stock=productStock.available;
+                        }
+                        return {
+                            ...p,
+                            stock: stock.toString(),
+                            name:escapeHtml(p.name),
+                            id:sanitizeInput(p.id)
+                        };
+                    });
+                    
                     const selects=['orderProductFilter','accountProductFilter','uploadProductId','addAccountProductId'];
                     selects.forEach(id=>{
                         const select=document.getElementById(id);
@@ -1426,6 +1484,7 @@
                                 state.allProducts.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
                         }
                     });
+                    
                     displayProducts(state.allProducts);
                 }catch(error){
                     console.error('Products error:',error);
@@ -1443,10 +1502,15 @@
                     const safeName=escapeHtml(p.name);
                     const safeDesc=escapeHtml(p.description||'No description');
                     const price=Number(p.price||0);
+                    const stock=Number(p.stock)||0;
                     return `
                         <div class="glass-card p-4">
                             <h3 class="font-bold mb-1">${safeName}</h3>
                             <p class="text-gray-400 text-sm mb-2">Rp ${price.toLocaleString('id-ID')}</p>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-xs text-gray-400">Stock:</span>
+                                <span class="text-sm font-semibold text-${stock>0?'green-400':'red-400'}">${stock}</span>
+                            </div>
                             <p class="text-xs text-gray-500 mb-3 line-clamp-2">${safeDesc}</p>
                             <div class="space-y-2">
                                 <input type="number" id="price_${safeId}" value="${price}" class="form-input text-sm" placeholder="Price" min="0">
@@ -1519,6 +1583,7 @@
                                 const available=statsData.stats?.available||0;
                                 badgeDesktop.textContent=available;
                                 badgeMobile.textContent=available;
+                                loadProductsForDropdown();
                             }
                         }
                     }
@@ -1598,6 +1663,7 @@
                     if(data.success){
                         showToast('Account deleted');
                         loadAccounts(state.currentAccountPage);
+                        loadProductsForDropdown();
                     }else{
                         showError(data.error||'Delete failed');
                     }
@@ -1732,6 +1798,7 @@
                         loadOrders(state.currentOrderPage);
                         loadAccounts(state.currentAccountPage);
                         loadDashboardData();
+                        loadProductsForDropdown();
                     }else{
                         showError(data.error||'Failed');
                     }
@@ -1849,6 +1916,7 @@
                         showToast('Uploaded successfully');
                         loadAccounts(state.currentAccountPage);
                         loadDashboardData();
+                        loadProductsForDropdown();
                     }else{
                         showError(data.error||'Upload failed');
                     }
@@ -1893,6 +1961,7 @@
                         showToast('Account added');
                         loadAccounts(state.currentAccountPage);
                         loadDashboardData();
+                        loadProductsForDropdown();
                     }else{
                         showError(data.error||'Failed');
                     }
@@ -1913,6 +1982,7 @@
                         showToast(data.message);
                         loadDashboardData();
                         loadStockReport();
+                        loadProductsForDropdown();
                     }else{
                         showError(data.error||'Sync failed');
                     }
@@ -1984,6 +2054,7 @@
                 if(section==='orders')loadOrders(1);
                 if(section==='accounts')loadAccounts(1);
                 if(section==='stockSync')loadStockReport();
+                if(section==='products')loadProductsForDropdown();
                 updateLastActivity();
             };
             
