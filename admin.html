@@ -344,7 +344,7 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
             gap: 16px;
         }
 
@@ -576,7 +576,7 @@
             display: inline-block;
             padding: 8px 20px;
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 30px;
             color: white;
             font-size: 0.9rem;
@@ -589,6 +589,7 @@
         .category-pill:hover {
             background: var(--primary-30);
             border-color: var(--primary-10);
+            color: white;
         }
 
         .category-pill.active {
@@ -623,6 +624,23 @@
                 height: 32px;
                 font-size: 0.8rem;
             }
+        }
+
+        .product-stock-input {
+            width: 80px;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--primary-10);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .product-stock-input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.15);
         }
     </style>
 </head>
@@ -1464,10 +1482,6 @@
                     
                     state.allProducts=(data.roles||[]).map(p=>{
                         let stock=parseInt(p.stock)||0;
-                        if(stockData&&stockData.stats){
-                            const productStock=stockData.products?.find(pr=>pr.id===p.id);
-                            if(productStock) stock=productStock.available;
-                        }
                         return {
                             ...p,
                             stock: stock.toString(),
@@ -1505,17 +1519,28 @@
                     const stock=Number(p.stock)||0;
                     return `
                         <div class="glass-card p-4">
-                            <h3 class="font-bold mb-1">${safeName}</h3>
-                            <p class="text-gray-400 text-sm mb-2">Rp ${price.toLocaleString('id-ID')}</p>
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="text-xs text-gray-400">Stock:</span>
-                                <span class="text-sm font-semibold text-${stock>0?'green-400':'red-400'}">${stock}</span>
-                            </div>
-                            <p class="text-xs text-gray-500 mb-3 line-clamp-2">${safeDesc}</p>
-                            <div class="space-y-2">
-                                <input type="number" id="price_${safeId}" value="${price}" class="form-input text-sm" placeholder="Price" min="0">
-                                <textarea id="desc_${safeId}" class="form-input text-sm" placeholder="Description" rows="2">${safeDesc}</textarea>
-                                <button onclick="updateProduct('${safeId}')" class="btn-primary text-sm py-2">Update</button>
+                            <h3 class="font-bold mb-2">${safeName}</h3>
+                            <p class="text-gray-400 text-sm mb-3">Current Price: Rp ${price.toLocaleString('id-ID')}</p>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-400 w-20">Price:</label>
+                                    <input type="number" id="price_${safeId}" value="${price}" class="form-input text-sm flex-1" placeholder="New Price" min="0">
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-400 w-20">Stock:</label>
+                                    <input type="number" id="stock_${safeId}" value="${stock}" class="form-input text-sm flex-1" placeholder="Stock" min="0">
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-400 w-20">Description:</label>
+                                    <textarea id="desc_${safeId}" class="form-input text-sm flex-1" placeholder="Description" rows="2">${safeDesc}</textarea>
+                                </div>
+                                
+                                <button onclick="updateProduct('${safeId}')" class="btn-primary text-sm py-2 w-full mt-2">
+                                    <i class="fas fa-save mr-1"></i> Update Product
+                                </button>
                             </div>
                         </div>
                     `;
@@ -1524,26 +1549,40 @@
             
             window.updateProduct=async function(id){
                 const priceInput=document.getElementById(`price_${id}`);
+                const stockInput=document.getElementById(`stock_${id}`);
                 const descInput=document.getElementById(`desc_${id}`);
-                if(!priceInput||!descInput)return;
+                
+                if(!priceInput||!stockInput||!descInput)return;
+                
                 const price=parseInt(priceInput.value);
+                const stock=parseInt(stockInput.value);
                 const description=sanitizeInput(descInput.value);
+                
                 if(isNaN(price)||price<0){
                     showError('Please enter a valid price');
                     return;
                 }
+                
+                if(isNaN(stock)||stock<0){
+                    showError('Please enter a valid stock');
+                    return;
+                }
+                
                 showLoading('Updating product...');
                 try{
                     const res=await secureFetch(`/api/admin/roles/${sanitizeInput(id)}`,{
                         method:'PUT',
-                        body:JSON.stringify({price,description})
+                        body:JSON.stringify({price,description,stock})
                     });
+                    
                     if(!res)return;
                     const data=await res.json();
                     hideLoading();
+                    
                     if(data.success){
-                        showToast('Product updated');
+                        showToast('Product updated successfully');
                         loadProductsForDropdown();
+                        loadDashboardData();
                     }else{
                         showError(data.error||'Update failed');
                     }
