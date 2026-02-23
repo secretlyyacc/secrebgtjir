@@ -1,7 +1,9 @@
+// server/routes/webhook.js
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const pakasirService = require('../services/pakasir.service');
 const whatsappBot = require('../models/WhatsAppBot');
 const db = require('../config/database');
@@ -13,8 +15,16 @@ const log = {
 };
 
 const ORDERS_JSON_PATH = path.join(__dirname, '../../data/orders.json');
-const ROLES_PATH = path.join(__dirname, '../../data/roles.json');
 const CONFIG_PATH = path.join(__dirname, '../../data/config.json');
+
+let config = {};
+try {
+    if (fs.existsSync(CONFIG_PATH)) {
+        config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    }
+} catch (error) {
+    log.error('Error loading config:', error.message);
+}
 
 async function findOrderInSqlite(orderId) {
     return new Promise((resolve) => {
@@ -100,13 +110,11 @@ async function findOrderWithRetry(orderId, maxRetries = 3) {
         }
         
         if (order) {
-            log.info(`✅ Order found in ${source} for ${orderId}`);
             return { order, source };
         }
         
         if (i < maxRetries - 1) {
             const delay = 1000 * (i + 1);
-            log.info(`⏳ Order ${orderId} not found, retry ${i + 1}/${maxRetries - 1} in ${delay}ms`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
@@ -114,26 +122,32 @@ async function findOrderWithRetry(orderId, maxRetries = 3) {
     return { order: null, source: null };
 }
 
-function getProductName(roleId) {
-    try {
-        if (fs.existsSync(ROLES_PATH)) {
-            const rolesData = JSON.parse(fs.readFileSync(ROLES_PATH, 'utf8'));
-            const roles = rolesData.roles || [];
-            const role = roles.find(r => r.id == roleId || r.id === roleId);
-            return role ? role.name : 'Product';
-        }
-    } catch (error) {
-        log.error('Error reading roles:', error.message);
-    }
-    return 'Product';
+function verifySignature(req) {
+    if (!config.pakasir?.webhook_secret) return true;
+    
+    const signature = req.headers['x-pakasir-signature'] || req.headers['x-signature'];
+    if (!signature) return false;
+    
+    const expectedSignature = crypto
+        .createHmac('sha256', config.pakasir.webhook_secret)
+        .update(JSON.stringify(req.body))
+        .digest('hex');
+    
+    return signature === expectedSignature;
 }
 
 router.post('/pakasir', async (req, res) => {
     try {
-        const paymentData = req.body;
-        log.info('📩 Webhook received from Pakasir:', paymentData);
+        log.info('📩 Webhook received at /api/webhook/pakasir');
+        log.info('Headers:', JSON.stringify(req.headers, null, 2));
+        log.info('Body:', JSON.stringify(req.body, null, 2));
 
-        const { amount, order_id, status, payment_method, completed_at } = paymentData;
+        if (!verifySignature(req)) {
+            log.warn('⚠️ Invalid webhook signature');
+            return res.status(401).json({ error: 'Invalid signature' });
+        }
+
+        const { amount, order_id, status, payment_method, completed_at } = req.body;
 
         if (!order_id || !amount || !status) {
             log.warn('Invalid webhook data - missing required fields');
@@ -220,7 +234,7 @@ router.post('/pakasir', async (req, res) => {
                     log.info(`Preparing to send redeem code to: ${customerEmail}`);
 
                     const emailData = {
-                        productName: getProductName(order.roleId || order.role),
+                        productName: 'Product',
                         amount: order.amount,
                         orderId: order.orderId,
                         redeemCode: redeemCode,
@@ -232,7 +246,7 @@ router.post('/pakasir', async (req, res) => {
                     const sendResult = await whatsappBot.sendRedeemCode(customerEmail, emailData);
                     
                     if (sendResult && sendResult.success) {
-                        log.info(`✅ Redeem code email sent to ${customerEmail} (Message ID: ${sendResult.messageId})`);
+                        log.info(`✅ Redeem code email sent to ${customerEmail}`);
                         
                         const emailUpdate = {
                             emailSent: true,
@@ -298,149 +312,28 @@ router.post('/pakasir', async (req, res) => {
     }
 });
 
-router.post('/test/:orderId', async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const { status = 'completed' } = req.body;
-
-        log.info(`🔧 Test webhook triggered for order: ${orderId}`);
-
-        const { order } = await findOrderWithRetry(orderId, 1);
-
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
+router.get('/test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Webhook endpoint is working',
+        endpoints: {
+            webhook: 'POST /api/webhook/pakasir',
+            test: 'GET /api/webhook/test'
         }
-
-        const mockPaymentData = {
-            amount: order.amount,
-            order_id: orderId,
-            project: 'test-project',
-            status: status,
-            payment_method: order.paymentMethod || 'qris',
-            completed_at: new Date().toISOString()
-        };
-
-        log.info('Test webhook data:', mockPaymentData);
-
-        res.json({
-            success: true,
-            message: 'Test webhook endpoint ready',
-            data: mockPaymentData,
-            note: 'Use this data to test your webhook handler'
-        });
-
-    } catch (error) {
-        log.error('Test webhook error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-router.get('/email-status/:orderId', async (req, res) => {
-    try {
-        const { orderId } = req.params;
-
-        const { order } = await findOrderWithRetry(orderId, 1);
-
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        res.json({
-            success: true,
-            orderId: order.orderId,
-            status: order.status,
-            emailSent: order.emailSent || false,
-            emailSentAt: order.emailSentAt || null,
-            emailError: order.emailError || null,
-            redeemCode: order.status === 'completed' ? order.redeemCode : null,
-            customer: order.username || order.customer
-        });
-
-    } catch (error) {
-        log.error('Error checking email status:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-router.post('/resend-email/:orderId', async (req, res) => {
-    try {
-        const { orderId } = req.params;
-
-        const { order, source } = await findOrderWithRetry(orderId, 1);
-
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        if (order.status !== 'completed') {
-            return res.status(400).json({ 
-                error: 'Order not completed',
-                status: order.status 
-            });
-        }
-
-        if (!order.redeemCode) {
-            return res.status(400).json({ error: 'No redeem code found' });
-        }
-
-        const customerEmail = order.username || order.customer;
-        if (!customerEmail) {
-            return res.status(400).json({ error: 'No customer email found' });
-        }
-
-        const emailData = {
-            productName: getProductName(order.roleId || order.role),
-            amount: order.amount,
-            orderId: order.orderId,
-            redeemCode: order.redeemCode,
-            customer: customerEmail,
-            username: order.username
-        };
-
-        const sendResult = await whatsappBot.sendRedeemCode(customerEmail, emailData);
-
-        if (sendResult && sendResult.success) {
-            const emailUpdate = {
-                emailSent: true,
-                emailSentAt: new Date().toISOString(),
-                emailMessageId: sendResult.messageId,
-                emailResendCount: (order.emailResendCount || 0) + 1
-            };
-            
-            if (source === 'sqlite') {
-                await updateOrderInSqlite(orderId, emailUpdate);
-            } else {
-                updateOrderInJson(orderId, emailUpdate);
-            }
-
-            res.json({
-                success: true,
-                message: 'Email resent successfully',
-                messageId: sendResult.messageId,
-                customer: customerEmail
-            });
-        } else {
-            res.status(500).json({ 
-                error: 'Failed to send email',
-                details: sendResult?.error 
-            });
-        }
-
-    } catch (error) {
-        log.error('Error resending email:', error);
-        res.status(500).json({ error: error.message });
-    }
+    });
 });
 
 router.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        emailService: whatsappBot.isReady ? 'ready' : 'not ready',
-        databases: {
-            sqlite: true,
-            json: fs.existsSync(ORDERS_JSON_PATH)
-        }
+        emailService: whatsappBot?.isReady ? 'ready' : 'not ready',
+        database: db ? 'connected' : 'file-based',
+        endpoints: [
+            'POST /pakasir - Main webhook from Pakasir',
+            'GET /test - Test endpoint',
+            'GET /health - Health check'
+        ]
     });
 });
 
