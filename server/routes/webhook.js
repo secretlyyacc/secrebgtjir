@@ -4,9 +4,8 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const pakasirService = require('../services/pakasir.service');
+const { db, Account } = require('../config/database');
 const whatsappBot = require('../models/WhatsAppBot');
-const db = require('../config/database');
 
 const log = {
     info: (...args) => console.log(`[WEBHOOK] ${new Date().toISOString()} -`, ...args),
@@ -16,11 +15,13 @@ const log = {
 
 const ORDERS_JSON_PATH = path.join(__dirname, '../../data/orders.json');
 const CONFIG_PATH = path.join(__dirname, '../../data/config.json');
+const PRODUCT_PATH = path.join(__dirname, '../../data/product.json');
 
 let config = {};
 try {
     if (fs.existsSync(CONFIG_PATH)) {
         config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+        log.info('✅ Config loaded');
     }
 } catch (error) {
     log.error('Error loading config:', error.message);
@@ -28,6 +29,10 @@ try {
 
 async function findOrderInSqlite(orderId) {
     return new Promise((resolve) => {
+        if (!db) {
+            resolve(null);
+            return;
+        }
         db.get('SELECT * FROM orders WHERE orderId = ?', [orderId], (err, row) => {
             if (err) {
                 log.error('SQLite error:', err.message);
@@ -52,6 +57,11 @@ function findOrderInJson(orderId) {
 
 async function updateOrderInSqlite(orderId, updatedData) {
     return new Promise((resolve) => {
+        if (!db) {
+            resolve(false);
+            return;
+        }
+        
         const fields = [];
         const values = [];
         
@@ -115,6 +125,7 @@ async function findOrderWithRetry(orderId, maxRetries = 3) {
         
         if (i < maxRetries - 1) {
             const delay = 1000 * (i + 1);
+            log.info(`⏳ Retry ${i + 1}/${maxRetries - 1} for order ${orderId} in ${delay}ms`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
@@ -122,66 +133,111 @@ async function findOrderWithRetry(orderId, maxRetries = 3) {
     return { order: null, source: null };
 }
 
+async function getAvailableAccount(productId) {
+    try {
+        if (db) {
+            return await Account.getAvailable(productId);
+        }
+        return null;
+    } catch (error) {
+        log.error('Error getting available account:', error);
+        return null;
+    }
+}
+
+async function markAccountAsSold(productId, orderId, customerEmail) {
+    try {
+        if (db) {
+            return await Account.markAsSold(productId, orderId, customerEmail);
+        }
+        return null;
+    } catch (error) {
+        log.error('Error marking account as sold:', error);
+        return null;
+    }
+}
+
+async function updateProductStock(productId) {
+    try {
+        if (!fs.existsSync(PRODUCT_PATH)) return;
+        
+        const productData = JSON.parse(fs.readFileSync(PRODUCT_PATH, 'utf8'));
+        const productIndex = productData.roles.findIndex(p => p.id === productId);
+        
+        if (productIndex !== -1 && db) {
+            const stock = await Account.getStock(productId);
+            productData.roles[productIndex].stock = stock.toString();
+            fs.writeFileSync(PRODUCT_PATH, JSON.stringify(productData, null, 2));
+            log.info(`📊 Updated stock for ${productId}: ${stock}`);
+        }
+    } catch (error) {
+        log.error('Error updating product stock:', error);
+    }
+}
+
 function verifySignature(req) {
-    if (!config.pakasir?.webhook_secret) return true;
+    if (!config.pakasir?.webhook_secret) {
+        log.info('ℹ️ No webhook secret configured, skipping signature verification');
+        return true;
+    }
     
     const signature = req.headers['x-pakasir-signature'] || req.headers['x-signature'];
-    if (!signature) return false;
+    if (!signature) {
+        log.warn('⚠️ No signature header found');
+        return false;
+    }
     
     const expectedSignature = crypto
         .createHmac('sha256', config.pakasir.webhook_secret)
         .update(JSON.stringify(req.body))
         .digest('hex');
     
-    return signature === expectedSignature;
+    const isValid = signature === expectedSignature;
+    if (!isValid) {
+        log.warn('⚠️ Invalid signature');
+    }
+    return isValid;
 }
 
 router.post('/pakasir', async (req, res) => {
     try {
-        log.info('📩 Webhook received at /api/webhook/pakasir');
-        log.info('Headers:', JSON.stringify(req.headers, null, 2));
-        log.info('Body:', JSON.stringify(req.body, null, 2));
+        const paymentData = req.body;
+        log.info('📩 WEBHOOK RECEIVED FROM PAKASIR:');
+        log.info(JSON.stringify(paymentData, null, 2));
 
-        if (!verifySignature(req)) {
-            log.warn('⚠️ Invalid webhook signature');
-            return res.status(401).json({ error: 'Invalid signature' });
+        const { amount, order_id, status, payment_method, completed_at } = paymentData;
+
+        if (!order_id) {
+            log.warn('❌ Missing order_id in webhook');
+            return res.status(400).json({ error: 'Missing order_id' });
         }
 
-        const { amount, order_id, status, payment_method, completed_at } = req.body;
-
-        if (!order_id || !amount || !status) {
-            log.warn('Invalid webhook data - missing required fields');
-            return res.status(400).json({ 
-                received: false,
-                error: 'Invalid data', 
-                required: ['order_id', 'amount', 'status'] 
-            });
-        }
+        log.info(`🔍 Processing order: ${order_id}, status: ${status}, amount: ${amount}`);
 
         const { order, source } = await findOrderWithRetry(order_id, 3);
 
         if (!order) {
-            log.warn(`❌ Order not found after retries: ${order_id}`);
+            log.warn(`❌ Order not found: ${order_id}`);
             return res.json({ 
                 received: true, 
-                warning: 'Order not found in database',
-                order_id: order_id
+                warning: 'Order not found',
+                order_id 
             });
         }
 
-        log.info(`Found order in ${source}: ${order_id}`, { 
+        log.info(`✅ Order found in ${source}:`, {
+            id: order.orderId,
             currentStatus: order.status,
-            username: order.username,
-            amount: order.amount 
+            amount: order.amount,
+            product: order.role
         });
 
         if (Number(order.amount) !== Number(amount)) {
-            log.error(`Amount mismatch for order ${order_id}:`, {
+            log.error(`❌ Amount mismatch for order ${order_id}:`, {
                 expected: order.amount,
                 received: amount
             });
             return res.status(400).json({ 
-                received: false,
                 error: 'Amount mismatch',
                 expected: order.amount,
                 received: amount
@@ -190,31 +246,65 @@ router.post('/pakasir', async (req, res) => {
 
         if (status === 'completed') {
             if (order.status === 'completed') {
-                log.warn(`Order ${order_id} already completed, skipping`);
+                log.warn(`ℹ️ Order ${order_id} already completed, skipping`);
+                return res.json({ received: true, message: 'Already processed' });
+            }
+
+            log.info(`💰 Payment completed for order ${order_id}`);
+
+            const productId = order.productId || order.role;
+            log.info(`🔍 Looking for available account for product: ${productId}`);
+
+            const account = await getAvailableAccount(productId);
+
+            if (!account) {
+                log.error(`❌ No available accounts for product: ${productId}`);
+                
+                const failedUpdate = {
+                    status: 'failed',
+                    failedReason: 'Out of stock',
+                    updatedAt: new Date().toISOString()
+                };
+                
+                if (source === 'sqlite') {
+                    await updateOrderInSqlite(order_id, failedUpdate);
+                } else {
+                    updateOrderInJson(order_id, failedUpdate);
+                }
+                
                 return res.json({ 
                     received: true, 
-                    message: 'Order already processed' 
+                    warning: 'Out of stock',
+                    order_id 
                 });
             }
 
-            const redeemCode = 'GTPS-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-            log.info(`Generated redeem code for ${order_id}: ${redeemCode}`);
+            log.info(`✅ Found account: ${account.email} (ID: ${account.id})`);
+
+            const soldAccount = await markAccountAsSold(productId, order_id, order.username);
+
+            if (!soldAccount) {
+                log.error('❌ Failed to mark account as sold');
+                return res.status(500).json({ error: 'Failed to mark account as sold' });
+            }
+
+            log.info(`✅ Account ${account.id} marked as sold`);
 
             const updatedOrderData = {
                 status: 'completed',
-                redeemCode: redeemCode,
+                accountData: JSON.stringify(soldAccount),
                 paymentMethod: payment_method || order.paymentMethod,
                 pakasirData: JSON.stringify({
-                    amount: amount,
-                    completed_at: completed_at,
-                    payment_method: payment_method
+                    amount,
+                    completed_at,
+                    payment_method,
+                    order_id
                 }),
                 completedAt: completed_at || new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
 
             let updateSuccess = false;
-            
             if (source === 'sqlite') {
                 updateSuccess = await updateOrderInSqlite(order_id, updatedOrderData);
             } else {
@@ -224,29 +314,36 @@ router.post('/pakasir', async (req, res) => {
             if (updateSuccess) {
                 log.info(`✅ Order ${order_id} updated to completed in ${source}`);
             } else {
-                log.error(`Failed to update order ${order_id} in ${source}`);
+                log.error(`❌ Failed to update order ${order_id} in ${source}`);
             }
+
+            await updateProductStock(productId);
 
             try {
                 const customerEmail = order.username || order.customer;
                 
                 if (customerEmail) {
-                    log.info(`Preparing to send redeem code to: ${customerEmail}`);
+                    log.info(`📧 Sending account details to: ${customerEmail}`);
 
                     const emailData = {
-                        productName: 'Product',
-                        amount: order.amount,
                         orderId: order.orderId,
-                        redeemCode: redeemCode,
+                        productName: order.role || 'Product',
+                        amount: order.amount,
+                        accountData: {
+                            email: account.email,
+                            password: account.password,
+                            twofa_code: account.twofa_code,
+                            additional_info: account.additional_info
+                        },
                         customer: customerEmail,
                         username: order.username,
                         status: 'completed'
                     };
 
-                    const sendResult = await whatsappBot.sendRedeemCode(customerEmail, emailData);
+                    const sendResult = await whatsappBot.sendAccountEmail(customerEmail, emailData);
                     
                     if (sendResult && sendResult.success) {
-                        log.info(`✅ Redeem code email sent to ${customerEmail}`);
+                        log.info(`✅ Account details email sent to ${customerEmail}`);
                         
                         const emailUpdate = {
                             emailSent: true,
@@ -260,27 +357,38 @@ router.post('/pakasir', async (req, res) => {
                             updateOrderInJson(order_id, emailUpdate);
                         }
                     } else {
-                        log.error(`Failed to send email to ${customerEmail}:`, sendResult?.error);
-                        
-                        const emailErrorUpdate = {
-                            emailSent: false,
-                            emailError: sendResult?.error || 'Unknown error',
-                            emailAttemptAt: new Date().toISOString()
-                        };
-                        
-                        if (source === 'sqlite') {
-                            await updateOrderInSqlite(order_id, emailErrorUpdate);
-                        } else {
-                            updateOrderInJson(order_id, emailErrorUpdate);
-                        }
+                        log.error(`❌ Failed to send email to ${customerEmail}:`, sendResult?.error);
                     }
                 }
             } catch (emailError) {
-                log.error('Error sending email notifications:', emailError);
+                log.error('❌ Error sending email:', emailError.message);
             }
 
+            try {
+                const adminEmail = config.whatsapp?.adminNumber || 'admin@lyytech.id';
+                if (adminEmail) {
+                    await whatsappBot.sendOrderNotification({
+                        orderId: order.orderId,
+                        productName: order.role,
+                        amount: order.amount,
+                        username: order.username,
+                        status: 'completed'
+                    });
+                }
+            } catch (notifError) {
+                log.error('Error sending admin notification:', notifError.message);
+            }
+
+            res.json({ 
+                received: true,
+                order_id,
+                status: 'completed',
+                account_sent: true,
+                account_email: account.email
+            });
+
         } else {
-            log.info(`Order ${order_id} status: ${status}, updating status only`);
+            log.info(`ℹ️ Order ${order_id} status: ${status}, updating status only`);
             
             const statusUpdate = {
                 status: status,
@@ -293,17 +401,17 @@ router.post('/pakasir', async (req, res) => {
             } else {
                 updateOrderInJson(order_id, statusUpdate);
             }
+
+            res.json({ 
+                received: true,
+                order_id,
+                status,
+                message: `Status updated to ${status}`
+            });
         }
 
-        res.json({ 
-            received: true,
-            order_id: order_id,
-            status: status,
-            processed_at: new Date().toISOString()
-        });
-
     } catch (error) {
-        log.error('Webhook processing error:', error);
+        log.error('❌ Webhook processing error:', error);
         res.status(200).json({ 
             received: true, 
             error: 'Internal processing error but webhook received',
@@ -313,12 +421,19 @@ router.post('/pakasir', async (req, res) => {
 });
 
 router.get('/test', (req, res) => {
+    log.info('✅ Test endpoint accessed');
     res.json({
         success: true,
         message: 'Webhook endpoint is working',
+        timestamp: new Date().toISOString(),
+        config: {
+            webhook_secret_configured: !!config.pakasir?.webhook_secret,
+            database_connected: !!db
+        },
         endpoints: {
             webhook: 'POST /api/webhook/pakasir',
-            test: 'GET /api/webhook/test'
+            test: 'GET /api/webhook/test',
+            health: 'GET /api/webhook/health'
         }
     });
 });
@@ -327,13 +442,14 @@ router.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        emailService: whatsappBot?.isReady ? 'ready' : 'not ready',
-        database: db ? 'connected' : 'file-based',
-        endpoints: [
-            'POST /pakasir - Main webhook from Pakasir',
-            'GET /test - Test endpoint',
-            'GET /health - Health check'
-        ]
+        services: {
+            email: whatsappBot?.isReady ? 'ready' : 'not ready',
+            database: db ? 'connected' : 'file-based',
+            config: {
+                webhook_secret: !!config.pakasir?.webhook_secret,
+                admin_number: !!config.whatsapp?.adminNumber
+            }
+        }
     });
 });
 
