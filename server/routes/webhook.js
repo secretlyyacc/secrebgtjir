@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const pakasirService = require('../services/pakasir.service');
 const whatsappBot = require('../models/WhatsAppBot');
+const db = require('../config/database');
 
 const log = {
     info: (...args) => console.log(`[WEBHOOK] ${new Date().toISOString()} -`, ...args),
@@ -11,78 +12,120 @@ const log = {
     warn: (...args) => console.warn(`[WEBHOOK WARN] ${new Date().toISOString()} -`, ...args)
 };
 
-const ORDERS_PATH = path.join(__dirname, '../../data/orders.json');
-const ROLES_PATH = path.join(__dirname, '../../data/product.json');
+const ORDERS_JSON_PATH = path.join(__dirname, '../../data/orders.json');
+const ROLES_PATH = path.join(__dirname, '../../data/roles.json');
 const CONFIG_PATH = path.join(__dirname, '../../data/config.json');
 
-function readOrders() {
+async function findOrderInSqlite(orderId) {
+    return new Promise((resolve) => {
+        db.get('SELECT * FROM orders WHERE orderId = ?', [orderId], (err, row) => {
+            if (err) {
+                log.error('SQLite error:', err.message);
+                resolve(null);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+}
+
+function findOrderInJson(orderId) {
     try {
-        if (fs.existsSync(ORDERS_PATH)) {
-            return JSON.parse(fs.readFileSync(ORDERS_PATH, 'utf8'));
-        }
-        return [];
+        if (!fs.existsSync(ORDERS_JSON_PATH)) return null;
+        const orders = JSON.parse(fs.readFileSync(ORDERS_JSON_PATH, 'utf8'));
+        return orders.find(o => o.orderId === orderId) || null;
     } catch (error) {
-        log.error('Error reading orders:', error);
-        return [];
+        log.error('Error reading orders.json:', error.message);
+        return null;
     }
 }
 
-function writeOrders(orders) {
+async function updateOrderInSqlite(orderId, updatedData) {
+    return new Promise((resolve) => {
+        const fields = [];
+        const values = [];
+        
+        Object.keys(updatedData).forEach(key => {
+            if (key !== 'orderId' && key !== 'id') {
+                fields.push(`${key} = ?`);
+                values.push(updatedData[key]);
+            }
+        });
+        
+        if (fields.length === 0) {
+            resolve(false);
+            return;
+        }
+        
+        values.push(orderId);
+        const sql = `UPDATE orders SET ${fields.join(', ')} WHERE orderId = ?`;
+        
+        db.run(sql, values, function(err) {
+            if (err) {
+                log.error('Error updating SQLite:', err.message);
+                resolve(false);
+            } else {
+                resolve(this.changes > 0);
+            }
+        });
+    });
+}
+
+function updateOrderInJson(orderId, updatedData) {
     try {
-        fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2));
+        if (!fs.existsSync(ORDERS_JSON_PATH)) return false;
+        
+        const orders = JSON.parse(fs.readFileSync(ORDERS_JSON_PATH, 'utf8'));
+        const index = orders.findIndex(o => o.orderId === orderId);
+        
+        if (index === -1) return false;
+        
+        orders[index] = { ...orders[index], ...updatedData };
+        fs.writeFileSync(ORDERS_JSON_PATH, JSON.stringify(orders, null, 2));
         return true;
     } catch (error) {
-        log.error('Error writing orders:', error);
+        log.error('Error updating orders.json:', error.message);
         return false;
     }
 }
 
-function readRoles() {
-    try {
-        if (fs.existsSync(ROLES_PATH)) {
-            return JSON.parse(fs.readFileSync(ROLES_PATH, 'utf8'));
+async function findOrderWithRetry(orderId, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        let order = await findOrderInSqlite(orderId);
+        let source = 'sqlite';
+        
+        if (!order) {
+            order = findOrderInJson(orderId);
+            source = order ? 'json' : null;
         }
-        return { roles: [] };
-    } catch (error) {
-        log.error('Error reading roles:', error);
-        return { roles: [] };
-    }
-}
-
-function readConfig() {
-    try {
-        if (fs.existsSync(CONFIG_PATH)) {
-            return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+        
+        if (order) {
+            log.info(`✅ Order found in ${source} for ${orderId}`);
+            return { order, source };
         }
-        return {
-            whatsapp: {
-                adminNumber: 'growlycs@gmail.com',
-                autoSend: true
-            }
-        };
-    } catch (error) {
-        log.error('Error reading config:', error);
-        return { whatsapp: {} };
+        
+        if (i < maxRetries - 1) {
+            const delay = 1000 * (i + 1);
+            log.info(`⏳ Order ${orderId} not found, retry ${i + 1}/${maxRetries - 1} in ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
     }
-}
-
-function generateRedeemCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = 'GTPS-';
-    for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
+    
+    return { order: null, source: null };
 }
 
 function getProductName(roleId) {
     try {
-        const rolesData = readRoles();
-        const role = rolesData.roles.find(r => r.id == roleId);
-        return role ? role.name : 'Product';
+        if (fs.existsSync(ROLES_PATH)) {
+            const rolesData = JSON.parse(fs.readFileSync(ROLES_PATH, 'utf8'));
+            const roles = rolesData.roles || [];
+            const role = roles.find(r => r.id == roleId || r.id === roleId);
+            return role ? role.name : 'Product';
+        }
     } catch (error) {
-        return 'Product';
+        log.error('Error reading roles:', error.message);
     }
+    return 'Product';
 }
 
 router.post('/pakasir', async (req, res) => {
@@ -90,40 +133,41 @@ router.post('/pakasir', async (req, res) => {
         const paymentData = req.body;
         log.info('📩 Webhook received from Pakasir:', paymentData);
 
-        const { amount, order_id, project, status, payment_method, completed_at } = paymentData;
+        const { amount, order_id, status, payment_method, completed_at } = paymentData;
 
         if (!order_id || !amount || !status) {
             log.warn('Invalid webhook data - missing required fields');
             return res.status(400).json({ 
+                received: false,
                 error: 'Invalid data', 
                 required: ['order_id', 'amount', 'status'] 
             });
         }
 
-        const orders = readOrders();
-        const orderIndex = orders.findIndex(o => o.orderId === order_id);
+        const { order, source } = await findOrderWithRetry(order_id, 3);
 
-        if (orderIndex === -1) {
-            log.warn(`Order not found: ${order_id}`);
+        if (!order) {
+            log.warn(`❌ Order not found after retries: ${order_id}`);
             return res.json({ 
                 received: true, 
-                warning: 'Order not found in local database' 
+                warning: 'Order not found in database',
+                order_id: order_id
             });
         }
 
-        const order = orders[orderIndex];
-        log.info(`Found order: ${order_id}`, { 
+        log.info(`Found order in ${source}: ${order_id}`, { 
             currentStatus: order.status,
             username: order.username,
             amount: order.amount 
         });
 
-        if (order.amount !== amount) {
+        if (Number(order.amount) !== Number(amount)) {
             log.error(`Amount mismatch for order ${order_id}:`, {
                 expected: order.amount,
                 received: amount
             });
             return res.status(400).json({ 
+                received: false,
                 error: 'Amount mismatch',
                 expected: order.amount,
                 received: amount
@@ -139,41 +183,44 @@ router.post('/pakasir', async (req, res) => {
                 });
             }
 
-            const redeemCode = generateRedeemCode();
+            const redeemCode = 'GTPS-' + Math.random().toString(36).substring(2, 10).toUpperCase();
             log.info(`Generated redeem code for ${order_id}: ${redeemCode}`);
 
-            const updatedOrder = {
-                ...order,
+            const updatedOrderData = {
                 status: 'completed',
                 redeemCode: redeemCode,
                 paymentMethod: payment_method || order.paymentMethod,
-                pakasirData: {
+                pakasirData: JSON.stringify({
                     amount: amount,
                     completed_at: completed_at,
                     payment_method: payment_method
-                },
+                }),
                 completedAt: completed_at || new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
 
-            orders[orderIndex] = updatedOrder;
+            let updateSuccess = false;
             
-            if (writeOrders(orders)) {
-                log.info(`✅ Order ${order_id} updated to completed`);
+            if (source === 'sqlite') {
+                updateSuccess = await updateOrderInSqlite(order_id, updatedOrderData);
             } else {
-                log.error(`Failed to write order ${order_id} to file`);
+                updateSuccess = updateOrderInJson(order_id, updatedOrderData);
+            }
+
+            if (updateSuccess) {
+                log.info(`✅ Order ${order_id} updated to completed in ${source}`);
+            } else {
+                log.error(`Failed to update order ${order_id} in ${source}`);
             }
 
             try {
                 const customerEmail = order.username || order.customer;
                 
-                if (!customerEmail) {
-                    log.warn(`No customer email found for order ${order_id}`);
-                } else {
+                if (customerEmail) {
                     log.info(`Preparing to send redeem code to: ${customerEmail}`);
 
                     const emailData = {
-                        productName: getProductName(order.roleId),
+                        productName: getProductName(order.roleId || order.role),
                         amount: order.amount,
                         orderId: order.orderId,
                         redeemCode: redeemCode,
@@ -187,94 +234,50 @@ router.post('/pakasir', async (req, res) => {
                     if (sendResult && sendResult.success) {
                         log.info(`✅ Redeem code email sent to ${customerEmail} (Message ID: ${sendResult.messageId})`);
                         
-                        orders[orderIndex] = {
-                            ...updatedOrder,
+                        const emailUpdate = {
                             emailSent: true,
                             emailSentAt: new Date().toISOString(),
                             emailMessageId: sendResult.messageId
                         };
-                        writeOrders(orders);
                         
+                        if (source === 'sqlite') {
+                            await updateOrderInSqlite(order_id, emailUpdate);
+                        } else {
+                            updateOrderInJson(order_id, emailUpdate);
+                        }
                     } else {
                         log.error(`Failed to send email to ${customerEmail}:`, sendResult?.error);
                         
-                        orders[orderIndex] = {
-                            ...updatedOrder,
+                        const emailErrorUpdate = {
                             emailSent: false,
                             emailError: sendResult?.error || 'Unknown error',
                             emailAttemptAt: new Date().toISOString()
                         };
-                        writeOrders(orders);
-                    }
-                }
-
-                const config = readConfig();
-                const adminEmail = config.whatsapp?.adminNumber || 'growlycs@gmail.com';
-                
-                if (adminEmail) {
-                    log.info(`Sending admin notification to: ${adminEmail}`);
-                    
-                    const adminData = {
-                        productName: getProductName(order.roleId),
-                        amount: order.amount,
-                        orderId: order.orderId,
-                        redeemCode: redeemCode,
-                        customer: customerEmail || order.username,
-                        username: order.username,
-                        status: 'completed',
-                        paymentMethod: payment_method || order.paymentMethod
-                    };
-
-                    await whatsappBot.sendOrderNotification(adminData);
-                    log.info(`✅ Admin notification sent`);
-                }
-
-            } catch (emailError) {
-                log.error('Error sending email notifications:', emailError);
-                
-                orders[orderIndex] = {
-                    ...updatedOrder,
-                    emailError: emailError.message,
-                    emailAttemptAt: new Date().toISOString()
-                };
-                writeOrders(orders);
-            }
-
-            try {
-                if (order.roleId) {
-                    const rolesData = readRoles();
-                    const roleIndex = rolesData.roles.findIndex(r => r.id == order.roleId);
-                    
-                    if (roleIndex !== -1) {
-                        if (rolesData.roles[roleIndex].stock > 0) {
-                            rolesData.roles[roleIndex].stock -= 1;
-                            
-                            fs.writeFileSync(ROLES_PATH, JSON.stringify(rolesData, null, 2));
-                            log.info(`Stock updated for role ${order.roleId}: ${rolesData.roles[roleIndex].stock} remaining`);
-                            
-                            if (rolesData.roles[roleIndex].stock <= 2) {
-                                log.warn(`Stock alert: ${rolesData.roles[roleIndex].name} only ${rolesData.roles[roleIndex].stock} left`);
-                                await whatsappBot.sendStockNotification(rolesData.roles[roleIndex].name);
-                            }
+                        
+                        if (source === 'sqlite') {
+                            await updateOrderInSqlite(order_id, emailErrorUpdate);
+                        } else {
+                            updateOrderInJson(order_id, emailErrorUpdate);
                         }
                     }
                 }
-            } catch (stockError) {
-                log.error('Error updating stock:', stockError);
+            } catch (emailError) {
+                log.error('Error sending email notifications:', emailError);
             }
 
         } else {
-            log.info(`Order ${order_id} status: ${status}, no action needed`);
+            log.info(`Order ${order_id} status: ${status}, updating status only`);
             
-            if (order.status !== status) {
-                orders[orderIndex] = {
-                    ...order,
-                    status: status,
-                    pakasirStatus: status,
-                    updatedAt: new Date().toISOString()
-                };
-                writeOrders(orders);
-                log.info(`Order ${order_id} status updated to ${status}`);
+            const statusUpdate = {
+                status: status,
+                paymentStatus: status,
+                updatedAt: new Date().toISOString()
+            };
+            
+            if (source === 'sqlite') {
+                await updateOrderInSqlite(order_id, statusUpdate);
+            } else {
+                updateOrderInJson(order_id, statusUpdate);
             }
         }
 
@@ -302,8 +305,7 @@ router.post('/test/:orderId', async (req, res) => {
 
         log.info(`🔧 Test webhook triggered for order: ${orderId}`);
 
-        const orders = readOrders();
-        const order = orders.find(o => o.orderId === orderId);
+        const { order } = await findOrderWithRetry(orderId, 1);
 
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
@@ -312,7 +314,7 @@ router.post('/test/:orderId', async (req, res) => {
         const mockPaymentData = {
             amount: order.amount,
             order_id: orderId,
-            project: process.env.PAKASIR_PROJECT_SLUG || 'test-project',
+            project: 'test-project',
             status: status,
             payment_method: order.paymentMethod || 'qris',
             completed_at: new Date().toISOString()
@@ -320,13 +322,11 @@ router.post('/test/:orderId', async (req, res) => {
 
         log.info('Test webhook data:', mockPaymentData);
 
-        req.body = mockPaymentData;
-        
         res.json({
             success: true,
-            message: 'Test webhook processed',
+            message: 'Test webhook endpoint ready',
             data: mockPaymentData,
-            note: 'This is a test endpoint. In production, actual webhook will come from Pakasir.'
+            note: 'Use this data to test your webhook handler'
         });
 
     } catch (error) {
@@ -339,8 +339,7 @@ router.get('/email-status/:orderId', async (req, res) => {
     try {
         const { orderId } = req.params;
 
-        const orders = readOrders();
-        const order = orders.find(o => o.orderId === orderId);
+        const { order } = await findOrderWithRetry(orderId, 1);
 
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
@@ -367,14 +366,11 @@ router.post('/resend-email/:orderId', async (req, res) => {
     try {
         const { orderId } = req.params;
 
-        const orders = readOrders();
-        const orderIndex = orders.findIndex(o => o.orderId === orderId);
+        const { order, source } = await findOrderWithRetry(orderId, 1);
 
-        if (orderIndex === -1) {
+        if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
-
-        const order = orders[orderIndex];
 
         if (order.status !== 'completed') {
             return res.status(400).json({ 
@@ -393,7 +389,7 @@ router.post('/resend-email/:orderId', async (req, res) => {
         }
 
         const emailData = {
-            productName: getProductName(order.roleId),
+            productName: getProductName(order.roleId || order.role),
             amount: order.amount,
             orderId: order.orderId,
             redeemCode: order.redeemCode,
@@ -404,14 +400,18 @@ router.post('/resend-email/:orderId', async (req, res) => {
         const sendResult = await whatsappBot.sendRedeemCode(customerEmail, emailData);
 
         if (sendResult && sendResult.success) {
-            orders[orderIndex] = {
-                ...order,
+            const emailUpdate = {
                 emailSent: true,
                 emailSentAt: new Date().toISOString(),
                 emailMessageId: sendResult.messageId,
                 emailResendCount: (order.emailResendCount || 0) + 1
             };
-            writeOrders(orders);
+            
+            if (source === 'sqlite') {
+                await updateOrderInSqlite(orderId, emailUpdate);
+            } else {
+                updateOrderInJson(orderId, emailUpdate);
+            }
 
             res.json({
                 success: true,
@@ -432,45 +432,15 @@ router.post('/resend-email/:orderId', async (req, res) => {
     }
 });
 
-router.post('/simulate/:orderId', async (req, res) => {
-    try {
-        const { orderId } = req.params;
-
-        const orders = readOrders();
-        const order = orders.find(o => o.orderId === orderId);
-
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        const simulationResult = await pakasirService.simulatePayment(orderId, order.amount);
-
-        res.json({
-            success: true,
-            message: 'Payment simulation triggered',
-            orderId: orderId,
-            simulation: simulationResult,
-            note: 'This will trigger a webhook from Pakasir in sandbox mode'
-        });
-
-    } catch (error) {
-        log.error('Simulation error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
 router.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         emailService: whatsappBot.isReady ? 'ready' : 'not ready',
-        endpoints: [
-            'POST /pakasir - Main webhook from Pakasir',
-            'POST /test/:orderId - Test webhook',
-            'GET /email-status/:orderId - Check email status',
-            'POST /resend-email/:orderId - Resend email',
-            'POST /simulate/:orderId - Simulate payment'
-        ]
+        databases: {
+            sqlite: true,
+            json: fs.existsSync(ORDERS_JSON_PATH)
+        }
     });
 });
 
