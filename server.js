@@ -108,10 +108,8 @@ routeFiles.forEach(route => {
     }
 });
 
-// ==================== ACCOUNTS ROUTES (DENGAN PRODUCT UPDATE) ====================
 app.use('/api/admin/accounts', require('./server/routes/admin/accounts'));
 
-// ==================== AUTH ENDPOINTS ====================
 app.get('/api/admin/verify', authenticateToken, (req, res) => {
     res.json({
         success: true,
@@ -124,7 +122,6 @@ app.get('/api/admin/verify', authenticateToken, (req, res) => {
     });
 });
 
-// ==================== STOCK SYNC ENDPOINTS ====================
 app.post('/api/admin/stock/sync', authenticateToken, async (req, res) => {
     try {
         const result = await stockSync.syncStock();
@@ -151,7 +148,6 @@ app.get('/api/admin/stock/status', authenticateToken, async (req, res) => {
     }
 });
 
-// ==================== BOT ENDPOINTS ====================
 app.get('/api/bot/status', (req, res) => {
     try {
         const status = whatsappBot.getStatus();
@@ -276,7 +272,6 @@ app.post('/api/whatsapp/send-redeem', async (req, res) => {
     }
 });
 
-// ==================== PAKASIR ENDPOINTS ====================
 app.get('/api/pakasir/methods', (req, res) => {
     try {
         const methods = pakasirService.getPaymentMethods();
@@ -297,7 +292,6 @@ app.get('/api/pakasir/status', (req, res) => {
     });
 });
 
-// ==================== STATIC PAGES ====================
 app.get('/pending.html', (req, res) => {
     const pendingPath = path.join(__dirname, 'pending', 'pending.html');
     if (fs.existsSync(pendingPath)) {
@@ -329,7 +323,6 @@ app.get('/admin', (req, res) => {
     }
 });
 
-// ==================== PRODUCTS ENDPOINT ====================
 app.get('/api/roles', (req, res) => {
     try {
         const rolesPath = path.join(__dirname, 'data', 'product.json');
@@ -345,7 +338,6 @@ app.get('/api/roles', (req, res) => {
     }
 });
 
-// ==================== ORDER DETAIL ENDPOINT ====================
 app.get('/api/order/:orderId', (req, res) => {
     const { orderId } = req.params;
     console.log('🔍 Looking for order:', orderId);
@@ -406,7 +398,6 @@ app.get('/api/order/:orderId', (req, res) => {
     });
 });
 
-// ==================== HEALTH ENDPOINTS ====================
 app.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
@@ -458,7 +449,6 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// ==================== 404 HANDLER ====================
 app.use((req, res) => {
     res.status(404).json({ 
         success: false, 
@@ -468,7 +458,6 @@ app.use((req, res) => {
     });
 });
 
-// ==================== ERROR HANDLER ====================
 app.use((error, req, res, next) => {
     log.error('Unhandled error:', error);
     res.status(500).json({
@@ -478,7 +467,6 @@ app.use((error, req, res, next) => {
     });
 });
 
-// ==================== CREATE DIRECTORIES ====================
 const publicDir = path.join(__dirname, 'public');
 if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
@@ -497,7 +485,6 @@ if (!fs.existsSync(pendingDir)) {
     log.info('✅ Created pending directory');
 }
 
-// ==================== CREATE DEFAULT FILES ====================
 const rolesPath = path.join(dataDir, 'product.json');
 if (!fs.existsSync(rolesPath)) {
     const defaultRoles = {
@@ -520,7 +507,6 @@ if (!fs.existsSync(ordersPath)) {
     log.info('✅ Created orders.json');
 }
 
-// ==================== START SERVERS ====================
 const httpServer = http.createServer(app);
 httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
     log.info(`🌐 HTTP Server running on port ${HTTP_PORT}`);
@@ -547,7 +533,6 @@ try {
     log.error('❌ Failed to start HTTPS server:', error.message);
 }
 
-// Initial stock sync
 (async () => {
     try {
         console.log('\n🔄 Initial stock synchronization...');
@@ -577,6 +562,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`   🔗 Admin Panel: http://localhost:${PORT}/admin`);
     console.log(`   🔗 Products: http://localhost:${PORT}/api/roles`);
     console.log(`   🔗 Accounts: http://localhost:${PORT}/api/admin/accounts`);
+    console.log(`   🔗 Webhook: http://localhost:${PORT}/api/webhook/pakasir`);
     console.log(`   🔗 Update Product: PUT /api/admin/accounts/products/:id`);
     console.log('='.repeat(70) + '\n');
 });
