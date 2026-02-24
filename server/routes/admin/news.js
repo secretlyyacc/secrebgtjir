@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { authenticateToken } = require('./server/middleware/auth');
+const { authenticateToken } = require('../../middleware/auth');
 
 const NEWS_PATH = path.join(__dirname, '../../data/news.json');
 
