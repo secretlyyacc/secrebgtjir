@@ -92,6 +92,7 @@
             font-size: 0.95rem;
             margin: 4px 8px;
             border-radius: 10px;
+            cursor: pointer;
         }
         
         .sidebar-link:hover {
@@ -139,6 +140,7 @@
             transition: all 0.2s ease;
             border-radius: 8px;
             gap: 4px;
+            cursor: pointer;
         }
 
         .mobile-nav-item i {
@@ -202,6 +204,11 @@
             transform: translateY(-2px);
             box-shadow: 0 15px 30px rgba(96, 165, 250, 0.3);
         }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
@@ -224,6 +231,28 @@
             border-color: var(--primary-10);
             transform: translateY(-2px);
         }
+        
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 1px solid #ef4444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-danger:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
 
         .badge {
             padding: 4px 10px;
@@ -238,6 +267,8 @@
         .badge-paid { background: var(--primary-10); color: white; }
         .badge-completed { background: #10b981; color: white; }
         .badge-cancelled { background: #ef4444; color: white; }
+        .badge-available { background: #10b981; color: white; }
+        .badge-sold { background: #6b7280; color: white; }
 
         .form-input {
             width: 100%;
@@ -255,6 +286,10 @@
             border-color: var(--primary-10);
             background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
         }
 
         select.form-input {
@@ -323,10 +358,32 @@
             overflow-y: auto;
             transform: translateY(20px) scale(0.95);
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .modal-overlay.active .modal-content {
             transform: translateY(0) scale(1);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
         .stat-card {
@@ -384,6 +441,7 @@
             animation: slideInUp 0.3s ease;
             text-align: center;
             font-size: 0.9rem;
+            display: none;
         }
         
         .toast.error {
@@ -448,7 +506,7 @@
                 font-size: 0.8rem;
             }
 
-            .btn-primary, .btn-secondary {
+            .btn-primary, .btn-secondary, .btn-danger {
                 padding: 10px 16px;
                 font-size: 0.9rem;
             }
@@ -488,33 +546,6 @@
             .mobile-nav {
                 padding-bottom: env(safe-area-inset-bottom);
             }
-        }
-
-        .animate-slide-in {
-            animation: slideIn 0.3s ease;
-        }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .animate-scale-in {
-            animation: scaleIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes scaleIn {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
 
         .stats-grid {
@@ -659,11 +690,30 @@
             box-shadow: 0 10px 25px -5px rgba(96, 165, 250, 0.3);
             transform: translateY(-2px);
         }
+        
+        .news-preview {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid #60a5fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="glass-card p-6 rounded-2xl w-full max-w-md animate-scale-in">
+        <div class="glass-card p-6 rounded-2xl w-full max-w-md animate-[scaleIn_0.3s_ease]">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#60a5fa] flex items-center justify-center animate-pulse">
                     <i class="fas fa-crown text-white text-2xl"></i>
@@ -703,15 +753,16 @@
                     </div>
                 </div>
                 <nav class="p-3 space-y-1">
-                    <a href="#" onclick="showSection('dashboard')" class="sidebar-link"><i class="fas fa-chart-pie w-5"></i><span>Dashboard</span></a>
-                    <a href="#" onclick="showSection('orders')" class="sidebar-link"><i class="fas fa-shopping-cart w-5"></i><span>Orders</span><span id="pendingBadgeDesktop" class="bg-red-500 text-xs px-2 py-0.5 rounded-full hidden ml-auto">0</span></a>
-                    <a href="#" onclick="showSection('accounts')" class="sidebar-link"><i class="fas fa-database w-5"></i><span>Account Stock</span><span id="stockBadgeDesktop" class="bg-green-500 text-xs px-2 py-0.5 rounded-full ml-auto">0</span></a>
-                    <a href="#" onclick="showSection('products')" class="sidebar-link"><i class="fas fa-box w-5"></i><span>Products</span></a>
-                    <a href="#" onclick="showSection('settings')" class="sidebar-link"><i class="fas fa-cog w-5"></i><span>Settings</span></a>
+                    <a onclick="showSection('dashboard')" class="sidebar-link active"><i class="fas fa-chart-pie w-5"></i><span>Dashboard</span></a>
+                    <a onclick="showSection('orders')" class="sidebar-link"><i class="fas fa-shopping-cart w-5"></i><span>Orders</span><span id="pendingBadgeDesktop" class="bg-red-500 text-xs px-2 py-0.5 rounded-full hidden ml-auto">0</span></a>
+                    <a onclick="showSection('accounts')" class="sidebar-link"><i class="fas fa-database w-5"></i><span>Account Stock</span><span id="stockBadgeDesktop" class="bg-green-500 text-xs px-2 py-0.5 rounded-full ml-auto">0</span></a>
+                    <a onclick="showSection('products')" class="sidebar-link"><i class="fas fa-box w-5"></i><span>Products</span></a>
+                    <a onclick="showSection('news')" class="sidebar-link"><i class="fas fa-newspaper w-5"></i><span>News</span></a>
+                    <a onclick="showSection('settings')" class="sidebar-link"><i class="fas fa-cog w-5"></i><span>Settings</span></a>
                     <div class="border-t border-white/10 my-3"></div>
-                    <a href="#" onclick="showSection('stockSync')" class="sidebar-link"><i class="fas fa-sync-alt w-5"></i><span>Stock Sync</span></a>
+                    <a onclick="showSection('stockSync')" class="sidebar-link"><i class="fas fa-sync-alt w-5"></i><span>Stock Sync</span></a>
                     <div class="border-t border-white/10 my-3"></div>
-                    <a href="#" onclick="logout()" class="sidebar-link text-red-400"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a>
+                    <a onclick="logout()" class="sidebar-link text-red-400"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a>
                 </nav>
             </div>
 
@@ -898,6 +949,66 @@
                     <div id="productsGrid" class="products-grid"></div>
                 </div>
 
+                <div id="newsSection" class="content-section">
+                    <h1 class="text-xl sm:text-2xl font-bold mb-4">News Management</h1>
+                    
+                    <div class="glass-card p-5 mb-5">
+                        <h2 class="text-lg font-semibold mb-4">Create / Edit News</h2>
+                        
+                        <form id="newsForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Title <span class="text-red-400">*</span></label>
+                                <input type="text" id="newsTitle" class="form-input" maxlength="100" placeholder="e.g., Special Promotion!" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Message <span class="text-red-400">*</span></label>
+                                <textarea id="newsMessage" class="form-input" rows="4" maxlength="1000" placeholder="Write your announcement here..." required></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Image URL (optional)</label>
+                                <input type="url" id="newsImageUrl" class="form-input" placeholder="https://example.com/image.jpg">
+                                <p class="text-xs text-gray-500 mt-1">Supported formats: JPG, PNG, GIF</p>
+                            </div>
+                            
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="newsIsActive" class="w-4 h-4 rounded border-white/30 bg-white/10 text-blue-500" checked>
+                                <label for="newsIsActive" class="text-sm text-white">Active (show immediately)</label>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-3 pt-2">
+                                <button type="submit" class="btn-primary text-sm px-5 py-2.5">
+                                    <i class="fas fa-save mr-1"></i> Save News
+                                </button>
+                                <button type="button" onclick="deactivateNews()" class="btn-secondary text-sm px-5 py-2.5">
+                                    <i class="fas fa-ban mr-1"></i> Deactivate
+                                </button>
+                                <button type="button" onclick="toggleNewsHistory()" class="btn-secondary text-sm px-5 py-2.5">
+                                    <i class="fas fa-history mr-1"></i> History
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="activeNewsPreview" class="glass-card p-5 mb-5 hidden">
+                        <h2 class="text-lg font-semibold mb-3">Active News Preview</h2>
+                        <div class="news-preview">
+                            <h3 id="previewTitle" class="font-bold text-white text-lg mb-2"></h3>
+                            <p id="previewMessage" class="text-white/80 text-sm mb-3"></p>
+                            <div id="previewImageContainer" class="rounded-lg overflow-hidden bg-white/10 h-32 flex items-center justify-center mb-2 hidden">
+                                <img id="previewImageSrc" src="" alt="Preview" class="w-full h-full object-cover">
+                            </div>
+                            <p class="text-xs text-gray-400">Appears on homepage after 1.5s delay</p>
+                        </div>
+                    </div>
+                    
+                    <div id="newsHistoryContainer" class="glass-card p-5 hidden">
+                        <h2 class="text-lg font-semibold mb-3">News History</h2>
+                        <div id="newsHistoryList" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
+                    </div>
+                </div>
+
                 <div id="stockSyncSection" class="content-section">
                     <h1 class="text-xl sm:text-2xl font-bold mb-4">Stock Synchronization</h1>
                     
@@ -950,7 +1061,7 @@
         </div>
 
         <div class="mobile-nav">
-            <button onclick="showSection('dashboard')" class="mobile-nav-item" id="mobileDashboardBtn">
+            <button onclick="showSection('dashboard')" class="mobile-nav-item active" id="mobileDashboardBtn">
                 <i class="fas fa-chart-pie"></i>
                 <span>Home</span>
             </button>
@@ -967,6 +1078,10 @@
             <button onclick="showSection('products')" class="mobile-nav-item" id="mobileProductsBtn">
                 <i class="fas fa-box"></i>
                 <span>Products</span>
+            </button>
+            <button onclick="showSection('news')" class="mobile-nav-item" id="mobileNewsBtn">
+                <i class="fas fa-newspaper"></i>
+                <span>News</span>
             </button>
             <button onclick="showSection('settings')" class="mobile-nav-item" id="mobileSettingsBtn">
                 <i class="fas fa-cog"></i>
@@ -1095,7 +1210,7 @@
                 </div>
                 <div class="flex justify-end gap-2">
                     <button onclick="hideCancelOrderModal()" class="btn-secondary text-sm py-2 px-3">Back</button>
-                    <button onclick="cancelOrderManually()" class="btn-danger text-sm py-2 px-3">Cancel</button>
+                    <button onclick="cancelOrderManually()" class="btn-danger text-sm py-2 px-3">Cancel Order</button>
                 </div>
             </div>
         </div>
@@ -1103,11 +1218,9 @@
 
     <div id="viewAccountModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-lg font-bold">Account Details</h2>
-                <button onclick="hideViewAccountModal()" class="text-gray-400 hover:text-white text-xl">&times;</button>
-            </div>
-            <div id="accountDetails" class="space-y-2 text-xs"></div>
+            <span class="modal-close" onclick="hideViewAccountModal()">&times;</span>
+            <h2 class="text-lg font-bold mb-3">Account Details</h2>
+            <div id="accountDetails" class="space-y-2 text-sm"></div>
         </div>
     </div>
 
@@ -1118,137 +1231,137 @@
         </div>
     </div>
 
-    <div id="toast" class="toast hidden"></div>
-    <div id="errorToast" class="toast error hidden"></div>
+    <div id="toast" class="toast"></div>
+    <div id="errorToast" class="toast error"></div>
 
     <script>
-        (function(){
-            const CONFIG={
-                TOKEN_KEY:'adminToken',
-                USER_KEY:'adminData',
-                SESSION_DURATION:86400000,
-                REFRESH_INTERVAL:60000,
-                MAX_FAILED_REQUESTS:5,
-                API_TIMEOUT:15000
+        (function() {
+            const CONFIG = {
+                TOKEN_KEY: 'adminToken',
+                USER_KEY: 'adminData',
+                SESSION_DURATION: 86400000,
+                REFRESH_INTERVAL: 60000,
+                MAX_FAILED_REQUESTS: 5,
+                API_TIMEOUT: 15000
             };
             
-            let state={
-                token:localStorage.getItem(CONFIG.TOKEN_KEY),
-                user:JSON.parse(localStorage.getItem(CONFIG.USER_KEY)||'{}'),
-                currentOrderPage:1,
-                currentAccountPage:1,
-                selectedFile:null,
-                revenueChart:null,
-                currentCompleteOrderId:null,
-                allProducts:[],
-                refreshInterval:null,
-                isRefreshing:false,
-                failedRequests:0,
-                sessionCheckInterval:null,
-                lastActivity:Date.now(),
-                currentSection:'dashboard'
+            let state = {
+                token: localStorage.getItem(CONFIG.TOKEN_KEY),
+                user: JSON.parse(localStorage.getItem(CONFIG.USER_KEY) || '{}'),
+                currentOrderPage: 1,
+                currentAccountPage: 1,
+                selectedFile: null,
+                revenueChart: null,
+                currentCompleteOrderId: null,
+                allProducts: [],
+                refreshInterval: null,
+                isRefreshing: false,
+                failedRequests: 0,
+                sessionCheckInterval: null,
+                lastActivity: Date.now(),
+                currentSection: 'dashboard',
+                newsHistory: []
             };
             
-            function sanitizeInput(input){
-                if(typeof input!=='string')return input;
-                return input.replace(/[<>'";$(){}\[\]\\]/g,'').trim();
+            function sanitizeInput(input) {
+                if (typeof input !== 'string') return input;
+                return input.replace(/[<>'";$(){}\[\]\\]/g, '').trim();
             }
             
-            function escapeHtml(unsafe){
-                if(!unsafe)return'';
+            function escapeHtml(unsafe) {
+                if (!unsafe) return '';
                 return String(unsafe)
-                    .replace(/&/g,'&amp;')
-                    .replace(/</g,'&lt;')
-                    .replace(/>/g,'&gt;')
-                    .replace(/"/g,'&quot;')
-                    .replace(/'/g,'&#039;')
-                    .replace(/`/g,'&#96;');
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;')
+                    .replace(/`/g, '&#96;');
             }
             
-            function isValidEmail(email){
+            function isValidEmail(email) {
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
             }
             
-            function updateLastActivity(){
-                state.lastActivity=Date.now();
-                localStorage.setItem('lastActivity',state.lastActivity.toString());
+            function updateLastActivity() {
+                state.lastActivity = Date.now();
+                localStorage.setItem('lastActivity', state.lastActivity.toString());
             }
             
-            function initSession(){
-                const savedLastActivity=localStorage.getItem('lastActivity');
-                if(savedLastActivity){
-                    const timeSince=Date.now()-parseInt(savedLastActivity);
-                    if(timeSince>CONFIG.SESSION_DURATION){
+            function initSession() {
+                const savedLastActivity = localStorage.getItem('lastActivity');
+                if (savedLastActivity) {
+                    const timeSince = Date.now() - parseInt(savedLastActivity);
+                    if (timeSince > CONFIG.SESSION_DURATION) {
                         handleLogout('Session expired. Please login again.');
                         return false;
                     }
                 }
                 updateLastActivity();
-                if(state.sessionCheckInterval)clearInterval(state.sessionCheckInterval);
-                state.sessionCheckInterval=setInterval(()=>{
-                    const timeSince=Date.now()-state.lastActivity;
-                    if(timeSince>CONFIG.SESSION_DURATION){
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
+                state.sessionCheckInterval = setInterval(() => {
+                    const timeSince = Date.now() - state.lastActivity;
+                    if (timeSince > CONFIG.SESSION_DURATION) {
                         handleLogout('Session expired due to inactivity.');
                     }
-                },60000);
+                }, 60000);
                 return true;
             }
             
-            async function secureFetch(url,options={}){
+            async function secureFetch(url, options = {}) {
                 updateLastActivity();
-                const controller=new AbortController();
-                const timeoutId=setTimeout(()=>controller.abort(),CONFIG.API_TIMEOUT);
-                const headers={
-                    'Content-Type':'application/json',
-                    'X-Requested-With':'XMLHttpRequest',
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                     ...options.headers
                 };
-                if(state.token&&!url.includes('/api/admin/login')){
-                    headers['Authorization']=`Bearer ${state.token}`;
+                if (state.token && !url.includes('/api/admin/login')) {
+                    headers['Authorization'] = `Bearer ${state.token}`;
                 }
-                try{
-                    const response=await fetch(url,{
+                try {
+                    const response = await fetch(url, {
                         ...options,
                         headers,
-                        signal:controller.signal,
-                        credentials:'same-origin',
-                        mode:'same-origin',
-                        cache:'no-store'
+                        signal: controller.signal,
+                        credentials: 'same-origin',
+                        mode: 'same-origin',
+                        cache: 'no-store'
                     });
                     clearTimeout(timeoutId);
-                    if(response.status===429){
+                    if (response.status === 429) {
                         showError('Too many requests. Please try again later.');
                         return null;
                     }
-                    if(response.status===401){
-                        console.warn('Received 401 - possible backend issue');
+                    if (response.status === 401) {
                         state.failedRequests++;
-                        if(state.failedRequests>=CONFIG.MAX_FAILED_REQUESTS){
+                        if (state.failedRequests >= CONFIG.MAX_FAILED_REQUESTS) {
                             handleLogout('Too many failed requests. Please login again.');
                         }
                         return response;
                     }
-                    if(response.ok){
-                        state.failedRequests=0;
+                    if (response.ok) {
+                        state.failedRequests = 0;
                     }
                     return response;
-                }catch(error){
+                } catch (error) {
                     clearTimeout(timeoutId);
-                    if(error.name==='AbortError'){
+                    if (error.name === 'AbortError') {
                         showError('Request timeout');
                     }
                     throw error;
                 }
             }
             
-            document.addEventListener('DOMContentLoaded',()=>{
-                if(state.token){
-                    if(initSession()){
+            document.addEventListener('DOMContentLoaded', () => {
+                if (state.token) {
+                    if (initSession()) {
                         showDashboard();
                         loadDashboardData();
                         startRefreshInterval();
                     }
-                }else{
+                } else {
                     showLoginScreen();
                 }
                 loadProductsForDropdown();
@@ -1261,144 +1374,143 @@
                     });
                 });
                 
-                ['click','mousemove','keypress','scroll','touchstart'].forEach(event=>{
-                    document.addEventListener(event,updateLastActivity);
+                ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+                    document.addEventListener(event, updateLastActivity);
                 });
             });
             
-            document.getElementById('loginForm').addEventListener('submit',async(e)=>{
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const username=sanitizeInput(document.getElementById('loginUsername').value);
-                const password=document.getElementById('loginPassword').value;
-                if(!username||!password){
+                const username = sanitizeInput(document.getElementById('loginUsername').value);
+                const password = document.getElementById('loginPassword').value;
+                if (!username || !password) {
                     showLoginError('Please enter username and password');
                     return;
                 }
                 showLoading('Logging in...');
-                try{
-                    const res=await secureFetch('/api/admin/login',{
-                        method:'POST',
-                        body:JSON.stringify({username,password})
+                try {
+                    const res = await secureFetch('/api/admin/login', {
+                        method: 'POST',
+                        body: JSON.stringify({ username, password })
                     });
-                    if(!res)return;
-                    const data=await res.json();
-                    if(data.success&&data.token){
-                        state.token=data.token;
-                        state.user=data.admin||{};
-                        localStorage.setItem(CONFIG.TOKEN_KEY,state.token);
-                        localStorage.setItem(CONFIG.USER_KEY,JSON.stringify(state.user));
+                    if (!res) return;
+                    const data = await res.json();
+                    if (data.success && data.token) {
+                        state.token = data.token;
+                        state.user = data.admin || {};
+                        localStorage.setItem(CONFIG.TOKEN_KEY, state.token);
+                        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(state.user));
                         initSession();
                         hideLoading();
                         showDashboard();
                         loadDashboardData();
                         startRefreshInterval();
                         showToast('Login successful');
-                    }else{
+                    } else {
                         hideLoading();
-                        showLoginError(data.error||'Login failed');
+                        showLoginError(data.error || 'Login failed');
                     }
-                }catch(error){
+                } catch (error) {
                     hideLoading();
                     showLoginError('Network error. Please try again.');
                 }
             });
             
-            function startRefreshInterval(){
-                if(state.refreshInterval)clearInterval(state.refreshInterval);
-                state.refreshInterval=setInterval(()=>{
-                    if(!state.isRefreshing&&state.currentSection==='dashboard'){
-                        state.isRefreshing=true;
-                        loadDashboardData().finally(()=>{
-                            state.isRefreshing=false;
+            function startRefreshInterval() {
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                state.refreshInterval = setInterval(() => {
+                    if (!state.isRefreshing && state.currentSection === 'dashboard') {
+                        state.isRefreshing = true;
+                        loadDashboardData().finally(() => {
+                            state.isRefreshing = false;
                         });
                     }
-                },CONFIG.REFRESH_INTERVAL);
+                }, CONFIG.REFRESH_INTERVAL);
             }
             
-            function showLoginScreen(){
+            function showLoginScreen() {
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('dashboard').classList.add('hidden');
                 document.getElementById('loginForm').reset();
-                if(state.refreshInterval)clearInterval(state.refreshInterval);
-                if(state.sessionCheckInterval)clearInterval(state.sessionCheckInterval);
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
             }
             
-            function showDashboard(){
+            function showDashboard() {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
-                document.getElementById('adminName').textContent=escapeHtml(state.user.username||'Admin');
+                document.getElementById('adminName').textContent = escapeHtml(state.user.username || 'Admin');
             }
             
-            function showLoginError(msg){
-                const errorDiv=document.getElementById('loginError');
-                errorDiv.textContent=escapeHtml(msg);
+            function showLoginError(msg) {
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = escapeHtml(msg);
                 errorDiv.classList.remove('hidden');
-                setTimeout(()=>errorDiv.classList.add('hidden'),5000);
+                setTimeout(() => errorDiv.classList.add('hidden'), 5000);
             }
             
-            function handleLogout(message){
-                if(state.refreshInterval)clearInterval(state.refreshInterval);
-                if(state.sessionCheckInterval)clearInterval(state.sessionCheckInterval);
+            function handleLogout(message) {
+                if (state.refreshInterval) clearInterval(state.refreshInterval);
+                if (state.sessionCheckInterval) clearInterval(state.sessionCheckInterval);
                 localStorage.removeItem(CONFIG.TOKEN_KEY);
                 localStorage.removeItem(CONFIG.USER_KEY);
                 localStorage.removeItem('lastActivity');
-                state.token=null;
-                state.user={};
-                state.failedRequests=0;
+                state.token = null;
+                state.user = {};
+                state.failedRequests = 0;
                 showLoginScreen();
-                if(message)showLoginError(message);
+                if (message) showLoginError(message);
             }
             
-            async function loadDashboardData(){
-                if(!state.token)return;
-                try{
-                    const res=await secureFetch('/api/admin/stats');
-                    if(!res)return;
-                    if(res.status===401){
-                        console.warn('Received 401 from stats but ignoring');
-                        return;
-                    }
-                    const data=await res.json();
+            window.logout = handleLogout;
+            
+            async function loadDashboardData() {
+                if (!state.token) return;
+                try {
+                    const res = await secureFetch('/api/admin/stats');
+                    if (!res) return;
+                    if (res.status === 401) return;
+                    const data = await res.json();
                     
-                    document.getElementById('totalOrders').textContent=data.stats?.totalOrders||0;
-                    document.getElementById('completedOrders').textContent=data.stats?.completedOrders||0;
-                    document.getElementById('pendingOrders').textContent=data.stats?.pendingOrders||0;
-                    document.getElementById('totalRevenue').textContent=`IDR ${(data.stats?.totalRevenue||0).toLocaleString('id-ID')}`;
+                    document.getElementById('totalOrders').textContent = data.stats?.totalOrders || 0;
+                    document.getElementById('completedOrders').textContent = data.stats?.completedOrders || 0;
+                    document.getElementById('pendingOrders').textContent = data.stats?.pendingOrders || 0;
+                    document.getElementById('totalRevenue').textContent = `IDR ${(data.stats?.totalRevenue || 0).toLocaleString('id-ID')}`;
                     
-                    const badgeDesktop=document.getElementById('pendingBadgeDesktop');
-                    const badgeMobile=document.getElementById('pendingBadgeMobile');
-                    if(data.stats?.pendingOrders>0){
-                        badgeDesktop.textContent=data.stats.pendingOrders;
+                    const badgeDesktop = document.getElementById('pendingBadgeDesktop');
+                    const badgeMobile = document.getElementById('pendingBadgeMobile');
+                    if (data.stats?.pendingOrders > 0) {
+                        badgeDesktop.textContent = data.stats.pendingOrders;
                         badgeDesktop.classList.remove('hidden');
-                        badgeMobile.textContent=data.stats.pendingOrders;
+                        badgeMobile.textContent = data.stats.pendingOrders;
                         badgeMobile.classList.remove('hidden');
-                    }else{
+                    } else {
                         badgeDesktop.classList.add('hidden');
                         badgeMobile.classList.add('hidden');
                     }
                     
-                    if(data.recentOrders)updateRecentOrders(data.recentOrders);
-                    if(data.stockStatus)updateStockStatus(data.stockStatus);
+                    if (data.recentOrders) updateRecentOrders(data.recentOrders);
+                    if (data.stockStatus) updateStockStatus(data.stockStatus);
                     
-                    updateRevenueChart(data.stats||{completedOrders:0,pendingOrders:0});
+                    updateRevenueChart(data.stats || { completedOrders: 0, pendingOrders: 0 });
                     
-                }catch(error){
-                    console.error('Dashboard error:',error);
-                    updateRevenueChart({completedOrders:0,pendingOrders:0});
+                } catch (error) {
+                    console.error('Dashboard error:', error);
+                    updateRevenueChart({ completedOrders: 0, pendingOrders: 0 });
                 }
             }
             
-            function updateRecentOrders(orders){
-                const tbody=document.getElementById('recentOrdersTable');
-                if(!orders||orders.length===0){
-                    tbody.innerHTML='<tr><td colspan="4" class="text-center py-8 text-gray-400 text-sm">No recent orders</td></tr>';
+            function updateRecentOrders(orders) {
+                const tbody = document.getElementById('recentOrdersTable');
+                if (!orders || orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400 text-sm">No recent orders</td></tr>';
                     return;
                 }
-                tbody.innerHTML=orders.slice(0,5).map(o=>{
-                    const safeOrderId=escapeHtml(o.orderId||'-');
-                    const safeUsername=escapeHtml(o.username||'-');
-                    const safeProduct=escapeHtml(o.productName||o.role||'-');
-                    const safeStatus=escapeHtml(o.status||'pending');
+                tbody.innerHTML = orders.slice(0, 5).map(o => {
+                    const safeOrderId = escapeHtml(o.orderId || '-');
+                    const safeUsername = escapeHtml(o.username || '-');
+                    const safeProduct = escapeHtml(o.productName || o.role || '-');
+                    const safeStatus = escapeHtml(o.status || 'pending');
                     return `<tr class="table-row">
                         <td class="table-cell font-mono">${safeOrderId}</td>
                         <td class="table-cell">${safeUsername}</td>
@@ -1408,16 +1520,16 @@
                 }).join('');
             }
             
-            function updateStockStatus(products){
-                const container=document.getElementById('stockStatus');
-                if(!products||products.length===0){
-                    container.innerHTML='<p class="text-gray-400 text-center text-sm">No stock data</p>';
+            function updateStockStatus(products) {
+                const container = document.getElementById('stockStatus');
+                if (!products || products.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center text-sm">No stock data</p>';
                     return;
                 }
-                container.innerHTML=products.map(p=>{
-                    const percent=p.maxStock>0?(p.stock/p.maxStock)*100:0;
-                    const color=percent<20?'bg-red-500':percent<50?'bg-yellow-500':'bg-green-500';
-                    const safeName=escapeHtml(p.name);
+                container.innerHTML = products.map(p => {
+                    const percent = p.maxStock > 0 ? (p.stock / p.maxStock) * 100 : 0;
+                    const color = percent < 20 ? 'bg-red-500' : percent < 50 ? 'bg-yellow-500' : 'bg-green-500';
+                    const safeName = escapeHtml(p.name);
                     return `<div>
                         <div class="flex justify-between text-xs mb-1">
                             <span>${safeName}</span>
@@ -1430,117 +1542,123 @@
                 }).join('');
             }
             
-            function updateRevenueChart(stats){
-                const ctx=document.getElementById('revenueChart').getContext('2d');
-                if(state.revenueChart)state.revenueChart.destroy();
+            function updateRevenueChart(stats) {
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                if (state.revenueChart) state.revenueChart.destroy();
                 
-                const completed=stats.completedOrders||0;
-                const pending=stats.pendingOrders||0;
+                const completed = stats.completedOrders || 0;
+                const pending = stats.pendingOrders || 0;
                 
-                state.revenueChart=new Chart(ctx,{
-                    type:'doughnut',
-                    data:{
-                        labels:['Completed','Pending'],
-                        datasets:[{
-                            data:[completed,pending],
-                            backgroundColor:['#10b981','#f59e0b'],
-                            borderColor:'rgba(255,255,255,0.1)',
-                            borderWidth:1
+                state.revenueChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Completed', 'Pending'],
+                        datasets: [{
+                            data: [completed, pending],
+                            backgroundColor: ['#10b981', '#f59e0b'],
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1
                         }]
                     },
-                    options:{
-                        responsive:true,
-                        maintainAspectRatio:true,
-                        plugins:{
-                            legend:{
-                                position:'bottom',
-                                labels:{
-                                    color:'white',
-                                    font:{size:10}
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'white',
+                                    font: { size: 10 }
                                 }
                             },
-                            tooltip:{
-                                callbacks:{
-                                    label:(context)=>`${context.label}: ${context.raw} orders`
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.label}: ${context.raw} orders`
                                 }
                             }
                         },
-                        cutout:'65%',
-                        animation:false
+                        cutout: '65%',
+                        animation: false
                     }
                 });
             }
             
-            function filterProducts(category){
-                if(category==='all'){
+            function filterProducts(category) {
+                if (category === 'all') {
                     displayProducts(state.allProducts);
-                }else{
-                    const filtered=state.allProducts.filter(p=>{
-                        if(category==='spotify') return p.id.includes('spotify');
-                        if(category==='netflix') return p.id.includes('netflix');
-                        if(category==='wetv') return p.id.includes('wetv');
-                        if(category==='panel') return p.id.includes('panel');
-                        if(category==='viu') return p.id.includes('viu');
+                } else {
+                    const filtered = state.allProducts.filter(p => {
+                        const name = (p.name || '').toLowerCase();
+                        if (category === 'spotify') return name.includes('spotify');
+                        if (category === 'netflix') return name.includes('netflix');
+                        if (category === 'wetv') return name.includes('wetv') || name.includes('wetv');
+                        if (category === 'panel') return name.includes('panel') || name.includes('pterodactyl');
+                        if (category === 'viu') return name.includes('viu');
                         return true;
                     });
                     displayProducts(filtered);
                 }
             }
             
-            async function loadProductsForDropdown(){
-                try{
-                    const res=await secureFetch('/api/roles');
-                    if(!res)return;
-                    const data=await res.json();
+            async function loadProductsForDropdown() {
+                try {
+                    const res = await secureFetch('/api/roles');
+                    if (!res) return;
+                    const data = await res.json();
                     
-                    const stockRes=await secureFetch('/api/admin/accounts/stats');
-                    let stockData=null;
-                    if(stockRes&&stockRes.ok){
-                        stockData=await stockRes.json();
-                    }
+                    state.allProducts = (data.roles || []).map(p => ({
+                        ...p,
+                        name: escapeHtml(p.name),
+                        id: sanitizeInput(p.id)
+                    }));
                     
-                    state.allProducts=(data.roles||[]).map(p=>{
-                        let stock=parseInt(p.stock)||0;
-                        return {
-                            ...p,
-                            stock: stock.toString(),
-                            name:escapeHtml(p.name),
-                            id:sanitizeInput(p.id)
-                        };
-                    });
-                    
-                    const selects=['orderProductFilter','accountProductFilter','uploadProductId','addAccountProductId'];
-                    selects.forEach(id=>{
-                        const select=document.getElementById(id);
-                        if(select){
-                            select.innerHTML='<option value="">All Products</option>'+
-                                state.allProducts.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
+                    const selects = ['orderProductFilter', 'accountProductFilter', 'uploadProductId', 'addAccountProductId'];
+                    selects.forEach(id => {
+                        const select = document.getElementById(id);
+                        if (select) {
+                            select.innerHTML = '<option value="">All Products</option>' +
+                                state.allProducts.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
                         }
                     });
                     
                     displayProducts(state.allProducts);
-                }catch(error){
-                    console.error('Products error:',error);
+                    
+                    const stockRes = await secureFetch('/api/admin/accounts/stats');
+                    if (stockRes && stockRes.ok) {
+                        const stockData = await stockRes.json();
+                        if (stockData.success) {
+                            document.getElementById('totalAccounts').textContent = stockData.stats?.total || 0;
+                            document.getElementById('availableAccounts').textContent = stockData.stats?.available || 0;
+                            document.getElementById('soldAccounts').textContent = stockData.stats?.sold || 0;
+                            const badgeDesktop = document.getElementById('stockBadgeDesktop');
+                            const badgeMobile = document.getElementById('stockBadgeMobile');
+                            const available = stockData.stats?.available || 0;
+                            badgeDesktop.textContent = available;
+                            badgeMobile.textContent = available;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Products error:', error);
                 }
             }
             
-            function displayProducts(products){
-                const grid=document.getElementById('productsGrid');
-                if(!products||products.length===0){
-                    grid.innerHTML='<p class="text-gray-400 text-center py-8 text-sm">No products available</p>';
+            function displayProducts(products) {
+                const grid = document.getElementById('productsGrid');
+                if (!products || products.length === 0) {
+                    grid.innerHTML = '<p class="text-gray-400 text-center py-8 text-sm">No products available</p>';
                     return;
                 }
-                grid.innerHTML=products.map(p=>{
-                    const safeId=escapeHtml(p.id);
-                    const safeName=escapeHtml(p.name);
-                    const safeDesc=escapeHtml(p.description||'No description');
-                    const price=Number(p.price||0);
-                    const stock=Number(p.stock)||0;
+                grid.innerHTML = products.map(p => {
+                    const safeId = escapeHtml(p.id);
+                    const safeName = escapeHtml(p.name);
+                    const safeDesc = escapeHtml(p.description || 'No description');
+                    const price = Number(p.price || 0);
+                    const stock = Number(p.stock) || 0;
                     return `
                         <div class="product-card glass-card p-4">
                             <h3 class="font-bold text-lg mb-2 text-white">${safeName}</h3>
                             <p class="text-gray-300 text-sm mb-3">Current Price: Rp ${price.toLocaleString('id-ID')}</p>
-                            <p class="text-gray-300 text-sm mb-3">Current Stock: <span class="font-semibold text-${stock>0?'green-400':'red-400'}">${stock}</span></p>
+                            <p class="text-gray-300 text-sm mb-3">Current Stock: <span class="font-semibold text-${stock > 0 ? 'green-400' : 'red-400'}">${stock}</span></p>
                             
                             <div class="space-y-4">
                                 <div class="flex flex-col gap-2">
@@ -1567,102 +1685,84 @@
                 }).join('');
             }
             
-            window.updateProduct=async function(id){
-                const priceInput=document.getElementById(`price_${id}`);
-                const stockInput=document.getElementById(`stock_${id}`);
-                const descInput=document.getElementById(`desc_${id}`);
+            window.updateProduct = async function(id) {
+                const priceInput = document.getElementById(`price_${id}`);
+                const stockInput = document.getElementById(`stock_${id}`);
+                const descInput = document.getElementById(`desc_${id}`);
                 
-                if(!priceInput||!stockInput||!descInput)return;
+                if (!priceInput || !stockInput || !descInput) return;
                 
-                const price=parseInt(priceInput.value);
-                const stock=parseInt(stockInput.value);
-                const description=sanitizeInput(descInput.value);
+                const price = parseInt(priceInput.value);
+                const stock = parseInt(stockInput.value);
+                const description = sanitizeInput(descInput.value);
                 
-                if(isNaN(price)||price<0){
+                if (isNaN(price) || price < 0) {
                     showError('Please enter a valid price');
                     return;
                 }
                 
-                if(isNaN(stock)||stock<0){
+                if (isNaN(stock) || stock < 0) {
                     showError('Please enter a valid stock');
                     return;
                 }
                 
                 showLoading('Updating product...');
-                try{
-                    const res=await secureFetch(`/api/admin/accounts/products/${sanitizeInput(id)}`,{
-                        method:'PUT',
-                        body:JSON.stringify({price,description,stock})
+                try {
+                    const res = await secureFetch(`/api/admin/accounts/products/${sanitizeInput(id)}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ price, description, stock })
                     });
                     
-                    if(!res)return;
-                    const data=await res.json();
+                    if (!res) return;
+                    const data = await res.json();
                     hideLoading();
                     
-                    if(data.success){
+                    if (data.success) {
                         showToast('Product updated successfully');
                         loadProductsForDropdown();
                         loadDashboardData();
-                    }else{
-                        showError(data.error||'Update failed');
+                    } else {
+                        showError(data.error || 'Update failed');
                     }
-                }catch(error){
+                } catch (error) {
                     hideLoading();
                     showError('Network error: ' + error.message);
                 }
             };
             
-            async function loadAccounts(page=1){
-                if(!state.token)return;
-                state.currentAccountPage=page;
-                const product=sanitizeInput(document.getElementById('accountProductFilter')?.value||'');
-                const status=sanitizeInput(document.getElementById('accountStatusFilter')?.value||'');
-                let url=`/api/admin/accounts?page=${page}&limit=20`;
-                if(product)url+=`&product_id=${encodeURIComponent(product)}`;
-                if(status)url+=`&status=${encodeURIComponent(status)}`;
-                try{
-                    const res=await secureFetch(url);
-                    if(!res)return;
-                    if(res.status===401){
-                        console.warn('Received 401 from accounts');
-                        return;
+            async function loadAccounts(page = 1) {
+                if (!state.token) return;
+                state.currentAccountPage = page;
+                const product = sanitizeInput(document.getElementById('accountProductFilter')?.value || '');
+                const status = sanitizeInput(document.getElementById('accountStatusFilter')?.value || '');
+                let url = `/api/admin/accounts?page=${page}&limit=20`;
+                if (product) url += `&product_id=${encodeURIComponent(product)}`;
+                if (status) url += `&status=${encodeURIComponent(status)}`;
+                try {
+                    const res = await secureFetch(url);
+                    if (!res) return;
+                    if (res.status === 401) return;
+                    const data = await res.json();
+                    if (data.success) {
+                        updateAccountsTable(data.accounts, data.pagination);
                     }
-                    const data=await res.json();
-                    if(data.success){
-                        updateAccountsTable(data.accounts,data.pagination);
-                        const statsRes=await secureFetch('/api/admin/accounts/stats');
-                        if(statsRes&&statsRes.ok){
-                            const statsData=await statsRes.json();
-                            if(statsData.success){
-                                document.getElementById('totalAccounts').textContent=statsData.stats?.total||0;
-                                document.getElementById('availableAccounts').textContent=statsData.stats?.available||0;
-                                document.getElementById('soldAccounts').textContent=statsData.stats?.sold||0;
-                                const badgeDesktop=document.getElementById('stockBadgeDesktop');
-                                const badgeMobile=document.getElementById('stockBadgeMobile');
-                                const available=statsData.stats?.available||0;
-                                badgeDesktop.textContent=available;
-                                badgeMobile.textContent=available;
-                                loadProductsForDropdown();
-                            }
-                        }
-                    }
-                }catch(error){
+                } catch (error) {
                     showError('Failed to load accounts');
                 }
             }
             
-            function updateAccountsTable(accounts,pagination){
-                const tbody=document.getElementById('accountsTable');
-                if(!accounts||accounts.length===0){
-                    tbody.innerHTML='<tr><td colspan="7" class="text-center py-8 text-gray-400 text-sm">No accounts found</td></tr>';
+            function updateAccountsTable(accounts, pagination) {
+                const tbody = document.getElementById('accountsTable');
+                if (!accounts || accounts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400 text-sm">No accounts found</td></tr>';
                     return;
                 }
-                tbody.innerHTML=accounts.map(acc=>{
-                    const safeId=acc.id;
-                    const safeProduct=escapeHtml(acc.product_id);
-                    const safeEmail=escapeHtml(acc.email);
-                    const safeTwofa=escapeHtml(acc.twofa_code||'-');
-                    const safeStatus=escapeHtml(acc.status);
+                tbody.innerHTML = accounts.map(acc => {
+                    const safeId = acc.id;
+                    const safeProduct = escapeHtml(acc.product_id);
+                    const safeEmail = escapeHtml(acc.email);
+                    const safeTwofa = escapeHtml(acc.twofa_code || '-');
+                    const safeStatus = escapeHtml(acc.status);
                     return `<tr class="table-row">
                         <td class="table-cell">#${safeId}</td>
                         <td class="table-cell">${safeProduct}</td>
@@ -1674,395 +1774,427 @@
                             </button>
                         </td>
                         <td class="table-cell">${safeTwofa}</td>
-                        <td class="table-cell"><span class="badge ${safeStatus==='available'?'badge-paid':'badge-completed'}">${safeStatus}</span></td>
+                        <td class="table-cell"><span class="badge ${safeStatus === 'available' ? 'badge-available' : 'badge-sold'}">${safeStatus}</span></td>
                         <td class="table-cell">
                             <button onclick="viewAccount(${safeId})" class="text-[#60a5fa] mr-2 text-xs"><i class="fas fa-eye"></i></button>
-                            ${safeStatus==='available'?`
+                            ${safeStatus === 'available' ? `
                                 <button onclick="deleteAccount(${safeId})" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button>
-                            `:''}
+                            ` : ''}
                         </td>
                     </tr>`;
                 }).join('');
-                updatePagination('accountsPagination',pagination,'loadAccounts');
+                updatePagination('accountsPagination', pagination, 'loadAccounts');
             }
             
-            window.viewAccount=async function(id){
-                try{
-                    const res=await secureFetch(`/api/admin/accounts/${id}`);
-                    if(!res)return;
-                    const data=await res.json();
-                    if(data.success){
-                        const a=data.account;
-                        const safeAdditional=JSON.stringify(a.additional_info||{},null,2);
-                        document.getElementById('accountDetails').innerHTML=`
+            window.viewAccount = async function(id) {
+                try {
+                    const res = await secureFetch(`/api/admin/accounts/${id}`);
+                    if (!res) return;
+                    const data = await res.json();
+                    if (data.success) {
+                        const a = data.account;
+                        const safeAdditional = JSON.stringify(a.additional_info || {}, null, 2);
+                        document.getElementById('accountDetails').innerHTML = `
                             <p><span class="text-gray-400">ID:</span> ${escapeHtml(a.id)}</p>
                             <p><span class="text-gray-400">Product:</span> ${escapeHtml(a.product_id)}</p>
                             <p><span class="text-gray-400">Email:</span> ${escapeHtml(a.email)}</p>
                             <p><span class="text-gray-400">Password:</span> ${escapeHtml(a.password)}</p>
-                            <p><span class="text-gray-400">2FA:</span> ${escapeHtml(a.twofa_code||'-')}</p>
+                            <p><span class="text-gray-400">2FA:</span> ${escapeHtml(a.twofa_code || '-')}</p>
                             <p><span class="text-gray-400">Additional:</span></p>
                             <pre class="bg-white/5 p-2 rounded text-xs overflow-x-auto">${escapeHtml(safeAdditional)}</pre>
-                            <p><span class="text-gray-400">Status:</span> <span class="badge ${a.status==='available'?'badge-paid':'badge-completed'}">${escapeHtml(a.status)}</span></p>
+                            <p><span class="text-gray-400">Status:</span> <span class="badge ${a.status === 'available' ? 'badge-available' : 'badge-sold'}">${escapeHtml(a.status)}</span></p>
                         `;
                         document.getElementById('viewAccountModal').classList.add('active');
                     }
-                }catch(error){
+                } catch (error) {
                     showError('Failed to load account details');
                 }
             };
             
-            window.hideViewAccountModal=()=>document.getElementById('viewAccountModal').classList.remove('active');
+            window.hideViewAccountModal = () => document.getElementById('viewAccountModal').classList.remove('active');
             
-            window.deleteAccount=async function(id){
-                if(!confirm('Delete this account?'))return;
-                try{
-                    const res=await secureFetch(`/api/admin/accounts/${id}`,{method:'DELETE'});
-                    if(!res)return;
-                    const data=await res.json();
-                    if(data.success){
+            window.deleteAccount = async function(id) {
+                if (!confirm('Delete this account?')) return;
+                try {
+                    const res = await secureFetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
+                    if (!res) return;
+                    const data = await res.json();
+                    if (data.success) {
                         showToast('Account deleted');
                         loadAccounts(state.currentAccountPage);
                         loadProductsForDropdown();
-                    }else{
-                        showError(data.error||'Delete failed');
+                    } else {
+                        showError(data.error || 'Delete failed');
                     }
-                }catch(error){
+                } catch (error) {
                     showError('Network error');
                 }
             };
             
-            window.copyToClipboard=function(text){
-                navigator.clipboard.writeText(text).then(()=>showToast('Copied!')).catch(()=>showError('Failed'));
+            window.copyToClipboard = function(text) {
+                navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => showError('Failed'));
             };
             
-            async function loadOrders(page=1){
-                if(!state.token)return;
-                state.currentOrderPage=page;
-                const status=sanitizeInput(document.getElementById('orderStatusFilter')?.value||'');
-                const product=sanitizeInput(document.getElementById('orderProductFilter')?.value||'');
-                const search=sanitizeInput(document.getElementById('orderSearch')?.value||'');
-                let url=`/api/admin/orders?page=${page}&limit=20`;
-                if(status)url+=`&status=${encodeURIComponent(status)}`;
-                if(product)url+=`&product=${encodeURIComponent(product)}`;
-                if(search)url+=`&search=${encodeURIComponent(search)}`;
-                try{
-                    const res=await secureFetch(url);
-                    if(!res)return;
-                    const data=await res.json();
-                    if(data.success){
-                        updateOrdersTable(data.orders,data.pagination);
+            async function loadOrders(page = 1) {
+                if (!state.token) return;
+                state.currentOrderPage = page;
+                const status = sanitizeInput(document.getElementById('orderStatusFilter')?.value || '');
+                const product = sanitizeInput(document.getElementById('orderProductFilter')?.value || '');
+                const search = sanitizeInput(document.getElementById('orderSearch')?.value || '');
+                let url = `/api/admin/orders?page=${page}&limit=20`;
+                if (status) url += `&status=${encodeURIComponent(status)}`;
+                if (product) url += `&product=${encodeURIComponent(product)}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                try {
+                    const res = await secureFetch(url);
+                    if (!res) return;
+                    const data = await res.json();
+                    if (data.success) {
+                        updateOrdersTable(data.orders, data.pagination);
                     }
-                }catch(error){
+                } catch (error) {
                     showError('Failed to load orders');
                 }
             }
             
-            function updateOrdersTable(orders,pagination){
-                const tbody=document.getElementById('ordersTable');
-                if(!orders||orders.length===0){
-                    tbody.innerHTML='<tr><td colspan="7" class="text-center py-8 text-gray-400 text-sm">No orders found</td></tr>';
+            function updateOrdersTable(orders, pagination) {
+                const tbody = document.getElementById('ordersTable');
+                if (!orders || orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400 text-sm">No orders found</td></tr>';
                     return;
                 }
-                tbody.innerHTML=orders.map(o=>{
-                    const safeOrderId=escapeHtml(o.orderId||'-');
-                    const safeUsername=escapeHtml(o.username||'-');
-                    const safeProduct=escapeHtml(o.productName||o.role||'-');
-                    const safeStatus=escapeHtml(o.status||'pending');
-                    const date=o.createdAt?new Date(o.createdAt).toLocaleDateString('id-ID'):'-';
+                tbody.innerHTML = orders.map(o => {
+                    const safeOrderId = escapeHtml(o.orderId || '-');
+                    const safeUsername = escapeHtml(o.username || '-');
+                    const safeProduct = escapeHtml(o.productName || o.role || '-');
+                    const safeStatus = escapeHtml(o.status || 'pending');
+                    const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('id-ID') : '-';
                     return `<tr class="table-row">
                         <td class="table-cell font-mono">${safeOrderId}</td>
                         <td class="table-cell">${safeUsername}</td>
                         <td class="table-cell">${safeProduct}</td>
-                        <td class="table-cell">Rp ${(o.amount||0).toLocaleString('id-ID')}</td>
+                        <td class="table-cell">Rp ${(o.amount || 0).toLocaleString('id-ID')}</td>
                         <td class="table-cell"><span class="badge badge-${safeStatus}">${safeStatus}</span></td>
                         <td class="table-cell">${escapeHtml(date)}</td>
                         <td class="table-cell">
                             <button onclick="viewOrder('${safeOrderId}')" class="text-[#60a5fa] mr-2 text-xs"><i class="fas fa-eye"></i></button>
-                            ${safeStatus==='pending'?`
+                            ${safeStatus === 'pending' ? `
                                 <button onclick="showCompleteOrderModal('${safeOrderId}')" class="text-green-400 mr-2 text-xs"><i class="fas fa-check-circle"></i></button>
                                 <button onclick="showCancelOrderModal('${safeOrderId}')" class="text-red-400 text-xs"><i class="fas fa-ban"></i></button>
-                            `:''}
+                            ` : ''}
                         </td>
                     </tr>`;
                 }).join('');
-                updatePagination('ordersPagination',pagination,'loadOrders');
+                updatePagination('ordersPagination', pagination, 'loadOrders');
             }
             
-            window.viewOrder=orderId=>window.open(`/?order=${encodeURIComponent(orderId)}`,'_blank');
+            window.viewOrder = orderId => window.open(`/?order=${encodeURIComponent(orderId)}`, '_blank');
             
-            window.showCompleteOrderModal=async function(orderId){
-                document.getElementById('completeOrderId').textContent=orderId;
+            window.showCompleteOrderModal = async function(orderId) {
+                document.getElementById('completeOrderId').textContent = orderId;
                 document.getElementById('completeOrderModal').classList.add('active');
-                state.currentCompleteOrderId=orderId;
-                const select=document.getElementById('manualAccountSelect');
-                select.innerHTML='<option value="">Loading...</option>';
-                select.disabled=true;
-                try{
-                    const orderRes=await secureFetch(`/api/order/${orderId}`);
-                    if(!orderRes)return;
-                    const orderData=await orderRes.json();
-                    if(orderData.success&&orderData.order){
-                        let productId=orderData.order?.productId||orderData.order?.roleId||orderData.order?.role;
-                        if(productId){
-                            productId=sanitizeInput(productId.toString().toLowerCase());
-                            const accountsRes=await secureFetch(`/api/admin/accounts?product_id=${encodeURIComponent(productId)}&status=available&limit=50`);
-                            if(!accountsRes)return;
-                            const accountsData=await accountsRes.json();
-                            select.disabled=false;
-                            if(!accountsData.accounts||accountsData.accounts.length===0){
-                                select.innerHTML='<option value="">No accounts available</option>';
-                                document.getElementById('accountStockInfo').innerHTML='<span class="text-yellow-400">⚠️ No accounts</span>';
-                            }else{
-                                select.innerHTML='<option value="">Select account...</option>'+
-                                    accountsData.accounts.map(a=>`<option value="${escapeHtml(a.id)}">${escapeHtml(a.email)}</option>`).join('');
-                                document.getElementById('accountStockInfo').innerHTML=`<span class="text-green-400">✅ ${accountsData.accounts.length} available</span>`;
+                state.currentCompleteOrderId = orderId;
+                const select = document.getElementById('manualAccountSelect');
+                select.innerHTML = '<option value="">Loading...</option>';
+                select.disabled = true;
+                try {
+                    const orderRes = await secureFetch(`/api/order/${orderId}`);
+                    if (!orderRes) return;
+                    const orderData = await orderRes.json();
+                    if (orderData.success && orderData.order) {
+                        let productId = orderData.order?.productId || orderData.order?.roleId || orderData.order?.role;
+                        if (productId) {
+                            productId = sanitizeInput(productId.toString().toLowerCase());
+                            const accountsRes = await secureFetch(`/api/admin/accounts?product_id=${encodeURIComponent(productId)}&status=available&limit=50`);
+                            if (!accountsRes) return;
+                            const accountsData = await accountsRes.json();
+                            select.disabled = false;
+                            if (!accountsData.accounts || accountsData.accounts.length === 0) {
+                                select.innerHTML = '<option value="">No accounts available</option>';
+                                document.getElementById('accountStockInfo').innerHTML = '<span class="text-yellow-400">⚠️ No accounts</span>';
+                            } else {
+                                select.innerHTML = '<option value="">Select account...</option>' +
+                                    accountsData.accounts.map(a => `<option value="${escapeHtml(a.id)}">${escapeHtml(a.email)}</option>`).join('');
+                                document.getElementById('accountStockInfo').innerHTML = `<span class="text-green-400">✅ ${accountsData.accounts.length} available</span>`;
                             }
-                        }else{
-                            select.innerHTML='<option value="">Product ID not found</option>';
-                            select.disabled=false;
+                        } else {
+                            select.innerHTML = '<option value="">Product ID not found</option>';
+                            select.disabled = false;
                         }
-                    }else{
-                        select.innerHTML='<option value="">Order not found</option>';
-                        select.disabled=false;
+                    } else {
+                        select.innerHTML = '<option value="">Order not found</option>';
+                        select.disabled = false;
                     }
-                }catch(error){
-                    select.innerHTML='<option value="">Error loading</option>';
-                    select.disabled=false;
+                } catch (error) {
+                    select.innerHTML = '<option value="">Error loading</option>';
+                    select.disabled = false;
                     showError('Failed to load accounts');
                 }
             };
             
-            window.hideCompleteOrderModal=()=>document.getElementById('completeOrderModal').classList.remove('active');
+            window.hideCompleteOrderModal = () => document.getElementById('completeOrderModal').classList.remove('active');
             
-            window.completeOrderManually=async function(){
-                const orderId=document.getElementById('completeOrderId').textContent;
-                const accountId=document.getElementById('manualAccountSelect').value;
-                if(!accountId){
+            window.completeOrderManually = async function() {
+                const orderId = document.getElementById('completeOrderId').textContent;
+                const accountId = document.getElementById('manualAccountSelect').value;
+                if (!accountId) {
                     showError('Please select an account');
                     return;
                 }
-                const btn=document.getElementById('completeOrderBtn');
-                btn.disabled=true;
-                btn.innerHTML='<i class="fas fa-spinner fa-spin mr-1"></i>Processing...';
-                try{
-                    const res=await secureFetch(`/api/admin/orders/${orderId}/complete`,{
-                        method:'POST',
-                        body:JSON.stringify({accountId})
+                const btn = document.getElementById('completeOrderBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Processing...';
+                try {
+                    const res = await secureFetch(`/api/admin/orders/${orderId}/complete`, {
+                        method: 'POST',
+                        body: JSON.stringify({ accountId })
                     });
-                    if(!res)return;
-                    const data=await res.json();
-                    if(data.success){
+                    if (!res) return;
+                    const data = await res.json();
+                    if (data.success) {
                         showToast('Order completed');
                         hideCompleteOrderModal();
                         loadOrders(state.currentOrderPage);
                         loadAccounts(state.currentAccountPage);
                         loadDashboardData();
                         loadProductsForDropdown();
-                    }else{
-                        showError(data.error||'Failed');
+                    } else {
+                        showError(data.error || 'Failed');
                     }
-                }catch(error){
+                } catch (error) {
                     showError('Network error');
-                }finally{
-                    btn.disabled=false;
-                    btn.innerHTML='Complete';
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Complete';
                 }
             };
             
-            window.showCancelOrderModal=orderId=>{
-                document.getElementById('cancelOrderId').textContent=orderId;
+            window.showCancelOrderModal = orderId => {
+                document.getElementById('cancelOrderId').textContent = orderId;
                 document.getElementById('cancelOrderModal').classList.add('active');
             };
             
-            window.hideCancelOrderModal=()=>document.getElementById('cancelOrderModal').classList.remove('active');
+            window.hideCancelOrderModal = () => document.getElementById('cancelOrderModal').classList.remove('active');
             
-            window.cancelOrderManually=async function(){
-                const orderId=document.getElementById('cancelOrderId').textContent;
-                const reason=sanitizeInput(document.getElementById('cancelReason').value);
+            window.cancelOrderManually = async function() {
+                const orderId = document.getElementById('cancelOrderId').textContent;
+                const reason = sanitizeInput(document.getElementById('cancelReason').value);
                 showLoading('Cancelling...');
-                try{
-                    const res=await secureFetch(`/api/admin/orders/${orderId}/cancel`,{
-                        method:'POST',
-                        body:JSON.stringify({reason})
+                try {
+                    const res = await secureFetch(`/api/admin/orders/${orderId}/cancel`, {
+                        method: 'POST',
+                        body: JSON.stringify({ reason })
                     });
-                    if(!res)return;
-                    const data=await res.json();
+                    if (!res) return;
+                    const data = await res.json();
                     hideLoading();
                     hideCancelOrderModal();
-                    if(data.success){
+                    if (data.success) {
                         showToast('Order cancelled');
                         loadOrders(state.currentOrderPage);
                         loadDashboardData();
-                    }else{
-                        showError(data.error||'Failed');
+                    } else {
+                        showError(data.error || 'Failed');
                     }
-                }catch(error){
+                } catch (error) {
                     hideLoading();
                     showError('Network error');
                 }
             };
             
-            window.showUploadModal=function(){
+            window.showUploadModal = function() {
                 document.getElementById('uploadModal').classList.add('active');
                 setupFileUpload();
             };
             
-            window.hideUploadModal=function(){
+            window.hideUploadModal = function() {
                 document.getElementById('uploadModal').classList.remove('active');
                 clearFile();
             };
             
-            function setupFileUpload(){
-                const fileInput=document.getElementById('accountFile');
-                const dropArea=document.getElementById('fileDropArea');
-                const uploadBtn=document.getElementById('uploadBtn');
-                const newDropArea=dropArea.cloneNode(true);
-                dropArea.parentNode.replaceChild(newDropArea,dropArea);
-                const newFileInput=fileInput.cloneNode(true);
-                fileInput.parentNode.replaceChild(newFileInput,fileInput);
-                const updatedFileInput=document.getElementById('accountFile');
-                const updatedDropArea=document.getElementById('fileDropArea');
-                const updatedFileInfo=document.getElementById('fileInfo');
-                updatedDropArea.onclick=()=>updatedFileInput.click();
-                updatedDropArea.ondragover=e=>{e.preventDefault();updatedDropArea.classList.add('dragover');};
-                updatedDropArea.ondragleave=()=>updatedDropArea.classList.remove('dragover');
-                updatedDropArea.ondrop=e=>{e.preventDefault();updatedDropArea.classList.remove('dragover');handleFile(e.dataTransfer.files[0]);};
-                updatedFileInput.onchange=e=>handleFile(e.target.files[0]);
-                function handleFile(file){
-                    if(!file)return;
-                    if(!file.name.endsWith('.json')){showError('Please select a JSON file');return;}
-                    if(file.size>5*1024*1024){showError('File too large (max 5MB)');return;}
-                    state.selectedFile=file;
-                    document.getElementById('fileName').textContent=escapeHtml(file.name);
-                    document.getElementById('fileSize').textContent=(file.size/1024).toFixed(1)+' KB';
+            function setupFileUpload() {
+                const fileInput = document.getElementById('accountFile');
+                const dropArea = document.getElementById('fileDropArea');
+                const uploadBtn = document.getElementById('uploadBtn');
+                
+                const newDropArea = dropArea.cloneNode(true);
+                dropArea.parentNode.replaceChild(newDropArea, dropArea);
+                
+                const newFileInput = fileInput.cloneNode(true);
+                fileInput.parentNode.replaceChild(newFileInput, fileInput);
+                
+                const updatedFileInput = document.getElementById('accountFile');
+                const updatedDropArea = document.getElementById('fileDropArea');
+                const updatedFileInfo = document.getElementById('fileInfo');
+                
+                updatedDropArea.onclick = () => updatedFileInput.click();
+                updatedDropArea.ondragover = e => { e.preventDefault(); updatedDropArea.classList.add('dragover'); };
+                updatedDropArea.ondragleave = () => updatedDropArea.classList.remove('dragover');
+                updatedDropArea.ondrop = e => { 
+                    e.preventDefault(); 
+                    updatedDropArea.classList.remove('dragover'); 
+                    handleFile(e.dataTransfer.files[0]); 
+                };
+                updatedFileInput.onchange = e => handleFile(e.target.files[0]);
+                
+                function handleFile(file) {
+                    if (!file) return;
+                    if (!file.name.endsWith('.json')) {
+                        showError('Please select a JSON file');
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        showError('File too large (max 5MB)');
+                        return;
+                    }
+                    state.selectedFile = file;
+                    document.getElementById('fileName').textContent = escapeHtml(file.name);
+                    document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
                     updatedFileInfo.classList.remove('hidden');
-                    uploadBtn.disabled=false;
+                    uploadBtn.disabled = false;
                 }
             }
             
-            window.clearFile=function(){
-                state.selectedFile=null;
+            window.clearFile = function() {
+                state.selectedFile = null;
                 document.getElementById('fileInfo').classList.add('hidden');
-                document.getElementById('uploadBtn').disabled=true;
-                document.getElementById('accountFile').value='';
+                document.getElementById('uploadBtn').disabled = true;
+                document.getElementById('accountFile').value = '';
             };
             
-            document.getElementById('uploadForm').addEventListener('submit',async(e)=>{
+            document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const productId=sanitizeInput(document.getElementById('uploadProductId').value);
-                if(!state.selectedFile||!productId){
+                const productId = sanitizeInput(document.getElementById('uploadProductId').value);
+                if (!state.selectedFile || !productId) {
                     showError('Please select a product and file');
                     return;
                 }
                 showLoading('Uploading...');
-                try{
-                    const text=await state.selectedFile.text();
-                    const accounts=JSON.parse(text);
-                    if(!Array.isArray(accounts))throw new Error('Invalid JSON');
-                    for(const acc of accounts){
-                        if(!acc.email||!acc.password)throw new Error('Email and password required');
-                        if(!isValidEmail(acc.email))throw new Error('Invalid email');
+                try {
+                    const text = await state.selectedFile.text();
+                    const accounts = JSON.parse(text);
+                    if (!Array.isArray(accounts)) throw new Error('Invalid JSON');
+                    for (const acc of accounts) {
+                        if (!acc.email || !acc.password) throw new Error('Email and password required');
+                        if (!isValidEmail(acc.email)) throw new Error('Invalid email');
                     }
-                    const res=await secureFetch('/api/admin/accounts/upload',{
-                        method:'POST',
-                        body:JSON.stringify({productId,accounts})
+                    const res = await secureFetch('/api/admin/accounts/upload', {
+                        method: 'POST',
+                        body: JSON.stringify({ productId, accounts })
                     });
-                    if(!res)return;
-                    const data=await res.json();
+                    if (!res) return;
+                    const data = await res.json();
                     hideLoading();
-                    if(data.success){
+                    if (data.success) {
                         hideUploadModal();
                         showToast('Uploaded successfully');
                         loadAccounts(state.currentAccountPage);
                         loadDashboardData();
                         loadProductsForDropdown();
-                    }else{
-                        showError(data.error||'Upload failed');
+                    } else {
+                        showError(data.error || 'Upload failed');
                     }
-                }catch(error){
+                } catch (error) {
                     hideLoading();
-                    showError(error.message||'Invalid file');
+                    showError(error.message || 'Invalid file');
                 }
             });
             
-            window.showAddAccountModal=()=>{
+            window.showAddAccountModal = () => {
                 document.getElementById('addAccountModal').classList.add('active');
                 document.getElementById('addAccountForm').reset();
             };
             
-            window.hideAddAccountModal=()=>document.getElementById('addAccountModal').classList.remove('active');
+            window.hideAddAccountModal = () => document.getElementById('addAccountModal').classList.remove('active');
             
-            document.getElementById('addAccountForm').addEventListener('submit',async(e)=>{
+            document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const productId=sanitizeInput(document.getElementById('addAccountProductId').value);
-                const email=sanitizeInput(document.getElementById('addAccountEmail').value);
-                const password=document.getElementById('addAccountPassword').value;
-                const twofa=sanitizeInput(document.getElementById('addAccountTwofa').value);
-                const additionalText=document.getElementById('addAccountAdditional').value;
-                if(!productId||!email||!password){showError('Fill all fields');return;}
-                if(!isValidEmail(email)){showError('Invalid email');return;}
-                if(password.length<6){showError('Password min 6 chars');return;}
-                let additional={};
-                if(additionalText){
-                    try{additional=JSON.parse(additionalText);}catch{showError('Invalid JSON');return;}
+                const productId = sanitizeInput(document.getElementById('addAccountProductId').value);
+                const email = sanitizeInput(document.getElementById('addAccountEmail').value);
+                const password = document.getElementById('addAccountPassword').value;
+                const twofa = sanitizeInput(document.getElementById('addAccountTwofa').value);
+                const additionalText = document.getElementById('addAccountAdditional').value;
+                
+                if (!productId || !email || !password) {
+                    showError('Fill all fields');
+                    return;
                 }
+                if (!isValidEmail(email)) {
+                    showError('Invalid email');
+                    return;
+                }
+                if (password.length < 6) {
+                    showError('Password min 6 chars');
+                    return;
+                }
+                
+                let additional = {};
+                if (additionalText) {
+                    try { 
+                        additional = JSON.parse(additionalText); 
+                    } catch { 
+                        showError('Invalid JSON'); 
+                        return; 
+                    }
+                }
+                
                 showLoading('Adding...');
-                try{
-                    const res=await secureFetch('/api/admin/accounts/upload',{
-                        method:'POST',
-                        body:JSON.stringify({productId,accounts:[{email,password,twofa:twofa||undefined,additional}]})
+                try {
+                    const res = await secureFetch('/api/admin/accounts/upload', {
+                        method: 'POST',
+                        body: JSON.stringify({ productId, accounts: [{ email, password, twofa: twofa || undefined, additional }] })
                     });
-                    if(!res)return;
-                    const data=await res.json();
+                    if (!res) return;
+                    const data = await res.json();
                     hideLoading();
-                    if(data.success){
+                    if (data.success) {
                         hideAddAccountModal();
                         showToast('Account added');
                         loadAccounts(state.currentAccountPage);
                         loadDashboardData();
                         loadProductsForDropdown();
-                    }else{
-                        showError(data.error||'Failed');
+                    } else {
+                        showError(data.error || 'Failed');
                     }
-                }catch(error){
+                } catch (error) {
                     hideLoading();
                     showError('Network error');
                 }
             });
             
-            window.syncStock=async function(){
+            window.syncStock = async function() {
                 showLoading('Syncing...');
-                try{
-                    const res=await secureFetch('/api/admin/stock/sync',{method:'POST'});
-                    if(!res)return;
-                    const data=await res.json();
+                try {
+                    const res = await secureFetch('/api/admin/stock/sync', { method: 'POST' });
+                    if (!res) return;
+                    const data = await res.json();
                     hideLoading();
-                    if(data.success){
+                    if (data.success) {
                         showToast(data.message);
                         loadDashboardData();
                         loadStockReport();
                         loadProductsForDropdown();
-                    }else{
-                        showError(data.error||'Sync failed');
+                    } else {
+                        showError(data.error || 'Sync failed');
                     }
-                }catch(error){
+                } catch (error) {
                     hideLoading();
                     showError('Network error');
                 }
             };
             
-            window.loadStockReport=async function(){
-                try{
-                    const res=await secureFetch('/api/admin/stock/status');
-                    if(!res)return;
-                    const data=await res.json();
-                    if(data.success){
-                        const report=data.report;
-                        const html=report.products.map(p=>`
+            window.loadStockReport = async function() {
+                try {
+                    const res = await secureFetch('/api/admin/stock/status');
+                    if (!res) return;
+                    const data = await res.json();
+                    if (data.success) {
+                        const report = data.report;
+                        const html = report.products.map(p => `
                             <div class="bg-white/5 rounded p-2 text-xs">
                                 <div class="flex justify-between">
                                     <span>${escapeHtml(p.name)}</span>
-                                    <span class="${p.needsUpdate?'text-yellow-400':'text-green-400'}">${p.stockInJson} → ${p.actualAvailable}</span>
+                                    <span class="${p.needsUpdate ? 'text-yellow-400' : 'text-green-400'}">${p.stockInJson} → ${p.actualAvailable}</span>
                                 </div>
                                 <div class="flex justify-between text-gray-400 text-[0.65rem]">
                                     <span>Total: ${p.totalAccounts}</span>
@@ -2070,92 +2202,274 @@
                                 </div>
                             </div>
                         `).join('');
-                        document.getElementById('stockReport').innerHTML=html||'<p class="text-gray-400">No products</p>';
+                        document.getElementById('stockReport').innerHTML = html || '<p class="text-gray-400">No products</p>';
                     }
-                }catch(error){}
+                } catch (error) {
+                    console.error('Stock report error:', error);
+                }
             };
             
-            window.saveSettings=async function(){
-                const settings={
-                    shopName:sanitizeInput(document.getElementById('shopName').value),
-                    contactEmail:sanitizeInput(document.getElementById('contactEmail').value),
-                    whatsappNumber:sanitizeInput(document.getElementById('whatsappNumber').value)
+            window.saveSettings = async function() {
+                const settings = {
+                    shopName: sanitizeInput(document.getElementById('shopName').value),
+                    contactEmail: sanitizeInput(document.getElementById('contactEmail').value),
+                    whatsappNumber: sanitizeInput(document.getElementById('whatsappNumber').value)
                 };
-                if(settings.contactEmail&&!isValidEmail(settings.contactEmail)){showError('Invalid email');return;}
+                if (settings.contactEmail && !isValidEmail(settings.contactEmail)) {
+                    showError('Invalid email');
+                    return;
+                }
                 showLoading('Saving...');
-                try{
-                    const res=await secureFetch('/api/admin/settings',{method:'POST',body:JSON.stringify(settings)});
-                    if(!res)return;
-                    const data=await res.json();
+                try {
+                    const res = await secureFetch('/api/admin/settings', { method: 'POST', body: JSON.stringify(settings) });
+                    if (!res) return;
+                    const data = await res.json();
                     hideLoading();
-                    if(data.success)showToast('Settings saved');
-                    else showError(data.error||'Failed');
-                }catch(error){
+                    if (data.success) showToast('Settings saved');
+                    else showError(data.error || 'Failed');
+                } catch (error) {
                     hideLoading();
                     showError('Network error');
                 }
             };
             
-            window.showSection=function(section){
-                document.querySelectorAll('.content-section').forEach(el=>el.classList.remove('active'));
-                document.getElementById(section+'Section').classList.add('active');
+            window.showSection = function(section) {
+                document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+                document.getElementById(section + 'Section').classList.add('active');
                 
-                document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
-                const activeLink=Array.from(document.querySelectorAll('.sidebar-link')).find(l=>l.textContent.toLowerCase().includes(section));
-                if(activeLink)activeLink.classList.add('active');
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                const activeLink = Array.from(document.querySelectorAll('.sidebar-link')).find(l => {
+                    const text = l.textContent.toLowerCase();
+                    return text.includes(section) || (section === 'news' && text.includes('news'));
+                });
+                if (activeLink) activeLink.classList.add('active');
                 
-                document.querySelectorAll('.mobile-nav-item').forEach(l=>l.classList.remove('active'));
-                const mobileBtn=document.getElementById('mobile'+section.charAt(0).toUpperCase()+section.slice(1)+'Btn');
-                if(mobileBtn)mobileBtn.classList.add('active');
+                document.querySelectorAll('.mobile-nav-item').forEach(l => l.classList.remove('active'));
+                const mobileBtn = document.getElementById('mobile' + section.charAt(0).toUpperCase() + section.slice(1) + 'Btn');
+                if (mobileBtn) mobileBtn.classList.add('active');
                 
-                state.currentSection=section;
+                state.currentSection = section;
                 
-                if(section==='orders')loadOrders(1);
-                if(section==='accounts')loadAccounts(1);
-                if(section==='stockSync')loadStockReport();
-                if(section==='products')loadProductsForDropdown();
+                if (section === 'orders') loadOrders(1);
+                if (section === 'accounts') loadAccounts(1);
+                if (section === 'stockSync') loadStockReport();
+                if (section === 'products') loadProductsForDropdown();
+                if (section === 'news') loadNewsData();
+                
                 updateLastActivity();
             };
             
-            function updatePagination(containerId,pagination,callback){
-                const container=document.getElementById(containerId);
-                if(!container||!pagination||pagination.pages<=1){container.innerHTML='';return;}
-                let html='<div class="flex gap-1">';
-                if(pagination.page>1)html+=`<button onclick="${callback}(${pagination.page-1})" class="btn-secondary text-sm py-1 px-2">«</button>`;
-                for(let i=1;i<=pagination.pages;i++){
-                    if(i===pagination.page)html+=`<span class="btn-primary text-sm py-1 px-2">${i}</span>`;
-                    else if(Math.abs(i-pagination.page)<=2||i===1||i===pagination.pages)html+=`<button onclick="${callback}(${i})" class="btn-secondary text-sm py-1 px-2">${i}</button>`;
+            function updatePagination(containerId, pagination, callback) {
+                const container = document.getElementById(containerId);
+                if (!container || !pagination || pagination.pages <= 1) {
+                    container.innerHTML = '';
+                    return;
                 }
-                if(pagination.page<pagination.pages)html+=`<button onclick="${callback}(${pagination.page+1})" class="btn-secondary text-sm py-1 px-2">»</button>`;
-                html+='</div>';
-                container.innerHTML=html;
+                let html = '<div class="flex gap-1">';
+                if (pagination.page > 1) {
+                    html += `<button onclick="${callback}(${pagination.page - 1})" class="btn-secondary text-sm py-1 px-2">«</button>`;
+                }
+                for (let i = 1; i <= pagination.pages; i++) {
+                    if (i === pagination.page) {
+                        html += `<span class="btn-primary text-sm py-1 px-2">${i}</span>`;
+                    } else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.pages) {
+                        html += `<button onclick="${callback}(${i})" class="btn-secondary text-sm py-1 px-2">${i}</button>`;
+                    }
+                }
+                if (pagination.page < pagination.pages) {
+                    html += `<button onclick="${callback}(${pagination.page + 1})" class="btn-secondary text-sm py-1 px-2">»</button>`;
+                }
+                html += '</div>';
+                container.innerHTML = html;
             }
             
-            function showLoading(text){document.getElementById('loadingText').textContent=text||'Loading...';document.getElementById('loadingOverlay').classList.remove('hidden');}
-            function hideLoading(){document.getElementById('loadingOverlay').classList.add('hidden');}
-            function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),3000);}
-            function showError(msg){const t=document.getElementById('errorToast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),3000);}
+            async function loadNewsData() {
+                try {
+                    const res = await secureFetch('/api/news/all');
+                    if (!res) return;
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        if (data.active) {
+                            document.getElementById('newsTitle').value = data.active.title || '';
+                            document.getElementById('newsMessage').value = data.active.message || '';
+                            document.getElementById('newsImageUrl').value = data.active.imageUrl || '';
+                            document.getElementById('newsIsActive').checked = true;
+                            
+                            document.getElementById('previewTitle').textContent = data.active.title;
+                            document.getElementById('previewMessage').textContent = data.active.message;
+                            
+                            const previewImageContainer = document.getElementById('previewImageContainer');
+                            const previewImageSrc = document.getElementById('previewImageSrc');
+                            
+                            if (data.active.imageUrl) {
+                                previewImageSrc.src = data.active.imageUrl;
+                                previewImageContainer.classList.remove('hidden');
+                            } else {
+                                previewImageContainer.classList.add('hidden');
+                            }
+                            
+                            document.getElementById('activeNewsPreview').classList.remove('hidden');
+                        } else {
+                            document.getElementById('activeNewsPreview').classList.add('hidden');
+                        }
+                        
+                        state.newsHistory = data.history || [];
+                    }
+                } catch (error) {
+                    console.error('Error loading news:', error);
+                }
+            }
             
-            window.logout=function(){
-                if(state.refreshInterval)clearInterval(state.refreshInterval);
-                if(state.sessionCheckInterval)clearInterval(state.sessionCheckInterval);
-                localStorage.removeItem(CONFIG.TOKEN_KEY);
-                localStorage.removeItem(CONFIG.USER_KEY);
-                localStorage.removeItem('lastActivity');
-                state.token=null;
-                state.user={};
-                state.failedRequests=0;
-                showLoginScreen();
-                showToast('Logged out');
+            window.toggleNewsHistory = function() {
+                const container = document.getElementById('newsHistoryContainer');
+                if (container.classList.contains('hidden')) {
+                    loadNewsHistory();
+                } else {
+                    container.classList.add('hidden');
+                }
             };
             
-            document.querySelectorAll('.modal-overlay').forEach(overlay=>{
-                overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('active');});
+            async function loadNewsHistory() {
+                const container = document.getElementById('newsHistoryContainer');
+                const list = document.getElementById('newsHistoryList');
+                
+                if (!state.newsHistory || state.newsHistory.length === 0) {
+                    list.innerHTML = '<p class="text-gray-400 text-center py-4">No news history available</p>';
+                } else {
+                    list.innerHTML = state.newsHistory.map(item => `
+                        <div class="bg-white/5 rounded-lg p-3 text-sm border border-white/10">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white">${escapeHtml(item.title)}</h4>
+                                    <p class="text-gray-400 text-xs mt-1 line-clamp-2">${escapeHtml(item.message)}</p>
+                                    <p class="text-gray-500 text-[0.65rem] mt-1">Created: ${new Date(item.createdAt).toLocaleDateString('id-ID')}</p>
+                                </div>
+                                <button onclick="deleteNewsHistory('${item.id}')" class="text-red-400 hover:text-red-300 p-1" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                container.classList.remove('hidden');
+            }
+            
+            window.deleteNewsHistory = async function(id) {
+                if (!confirm('Delete this news from history?')) return;
+                
+                try {
+                    const res = await secureFetch(`/api/news/history/${id}`, { method: 'DELETE' });
+                    if (!res) return;
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('News deleted');
+                        state.newsHistory = state.newsHistory.filter(item => item.id !== id);
+                        loadNewsHistory();
+                    } else {
+                        showError(data.error || 'Delete failed');
+                    }
+                } catch (error) {
+                    showError('Network error');
+                }
+            };
+            
+            window.deactivateNews = async function() {
+                if (!confirm('Deactivate current news? It will be moved to history.')) return;
+                
+                try {
+                    const res = await secureFetch('/api/news/deactivate', { method: 'POST' });
+                    if (!res) return;
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('News deactivated');
+                        document.getElementById('newsForm').reset();
+                        document.getElementById('activeNewsPreview').classList.add('hidden');
+                        document.getElementById('newsHistoryContainer').classList.add('hidden');
+                        loadNewsData();
+                    } else {
+                        showError(data.error || 'Deactivate failed');
+                    }
+                } catch (error) {
+                    showError('Network error');
+                }
+            };
+            
+            document.getElementById('newsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const title = sanitizeInput(document.getElementById('newsTitle').value);
+                const message = sanitizeInput(document.getElementById('newsMessage').value);
+                const imageUrl = sanitizeInput(document.getElementById('newsImageUrl').value);
+                const isActive = document.getElementById('newsIsActive').checked;
+                
+                if (!title || !message) {
+                    showError('Title and message are required');
+                    return;
+                }
+                
+                showLoading('Saving news...');
+                
+                try {
+                    const res = await secureFetch('/api/news', {
+                        method: 'POST',
+                        body: JSON.stringify({ title, message, imageUrl, isActive })
+                    });
+                    
+                    if (!res) return;
+                    const data = await res.json();
+                    hideLoading();
+                    
+                    if (data.success) {
+                        showToast('News saved successfully');
+                        loadNewsData();
+                    } else {
+                        showError(data.error || 'Save failed');
+                    }
+                } catch (error) {
+                    hideLoading();
+                    showError('Network error');
+                }
             });
             
-            document.addEventListener('keydown',e=>{
-                if(e.key==='Escape')document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+            function showLoading(text) { 
+                document.getElementById('loadingText').textContent = text || 'Loading...'; 
+                document.getElementById('loadingOverlay').classList.remove('hidden'); 
+            }
+            
+            function hideLoading() { 
+                document.getElementById('loadingOverlay').classList.add('hidden'); 
+            }
+            
+            function showToast(msg) { 
+                const t = document.getElementById('toast'); 
+                t.textContent = msg; 
+                t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000); 
+            }
+            
+            function showError(msg) { 
+                const t = document.getElementById('errorToast'); 
+                t.textContent = msg; 
+                t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000); 
+            }
+            
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('active'); });
             });
+            
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+                }
+            });
+            
+            window.loadAccounts = loadAccounts;
+            window.loadOrders = loadOrders;
         })();
     </script>
 </body>
