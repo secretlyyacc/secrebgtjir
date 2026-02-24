@@ -561,6 +561,135 @@
             text-align: center;
         }
 
+        /* Pending Order Notification */
+        .pending-notification {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 20px;
+            padding: 20px 25px;
+            margin-bottom: 30px;
+            display: none;
+            position: relative;
+            animation: slideDown 0.5s ease;
+            box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .pending-notification.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-resume {
+            background: white;
+            color: #f59e0b;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-resume:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 14px 30px;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-cancel:hover {
+            background: white;
+            color: #f59e0b;
+            transform: translateY(-4px);
+        }
+
+        .order-info {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 25px;
+            margin-top: 30px;
+            border-left: 6px solid #fbbf24;
+        }
+
+        .order-info h3 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .order-details {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 18px;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: white;
+        }
+
+        .order-timestamp {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .draft-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 40px;
+            font-size: 0.85rem;
+            margin-left: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
         @keyframes slideInUp {
             from {
                 transform: translateY(100%);
@@ -674,6 +803,14 @@
             .btn-primary {
                 padding: 16px 28px;
             }
+            
+            .pending-actions {
+                flex-direction: column;
+            }
+            
+            .btn-resume, .btn-cancel {
+                width: 100%;
+            }
         }
 
         @media (max-width: 640px) {
@@ -760,6 +897,10 @@
                     <span class="text-xl sm:text-2xl font-bold block leading-tight text-white">LyyTech<span class="text-white">ID</span></span>
                     <span class="text-xs text-white/80 hidden sm:block">Premium Digital Store</span>
                 </div>
+                <span id="draftIndicator" class="draft-indicator hidden">
+                    <i class="fas fa-pen"></i>
+                    <span>Draft tersimpan</span>
+                </span>
             </div>
             
             <!-- Desktop Menu -->
@@ -795,6 +936,37 @@
 
     <!-- Main Content -->
     <main class="pt-28 sm:pt-32 pb-12 px-4 max-w-7xl mx-auto">
+        <!-- Pending Order Notification -->
+        <div id="pendingNotification" class="pending-notification">
+            <div class="flex items-start gap-4">
+                <div class="text-4xl">⏳</div>
+                <div class="flex-1">
+                    <h3 class="text-white text-xl font-bold mb-2">Ada Pesanan Pending!</h3>
+                    <p id="pendingMessage" class="text-white/90 mb-4">Kamu memiliki pesanan yang belum diselesaikan.</p>
+                    <div id="pendingDetails" class="bg-white/20 p-4 rounded-xl mb-4 text-sm hidden">
+                        <div class="grid grid-cols-2 gap-2">
+                            <span class="text-white/70">Produk:</span>
+                            <span id="pendingProduct" class="text-white font-semibold"></span>
+                            <span class="text-white/70">Harga:</span>
+                            <span id="pendingPrice" class="text-white font-semibold"></span>
+                            <span class="text-white/70">Email:</span>
+                            <span id="pendingEmail" class="text-white font-semibold truncate"></span>
+                        </div>
+                    </div>
+                    <div class="pending-actions">
+                        <button class="btn-resume" onclick="resumePendingOrder()">
+                            <i class="fas fa-play"></i>
+                            Lanjutkan Pesanan
+                        </button>
+                        <button class="btn-cancel" onclick="cancelPendingOrder()">
+                            <i class="fas fa-times"></i>
+                            Batalkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Banner Section -->
         <section id="home" class="mb-20 sm:mb-24" data-aos="fade-up">
             <div class="banner-container">
@@ -954,6 +1126,16 @@
                 </div>
             </div>
         </section>
+
+        <!-- Last Order Info -->
+        <div id="lastOrderInfo" class="order-info hidden">
+            <h3><i class="fas fa-history mr-2"></i> Pesanan Terakhir</h3>
+            <div id="lastOrderDetails" class="order-details"></div>
+            <div id="lastOrderTime" class="order-timestamp">
+                <i class="fas fa-clock"></i>
+                <span></span>
+            </div>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -1058,13 +1240,14 @@
                         placeholder="your@email.com"
                         required
                         class="form-input"
+                        oninput="autoSaveCheckoutData()"
                     >
                     <p class="text-xs text-white/70 mt-2">Account details will be sent here</p>
                 </div>
                 
                 <div>
                     <label class="block text-white/90 text-sm mb-2 font-medium">Payment Method</label>
-                    <select id="paymentMethod" class="form-select" required>
+                    <select id="paymentMethod" class="form-select" required onchange="autoSaveCheckoutData()">
                         <option value="">Select payment method</option>
                     </select>
                 </div>
@@ -1130,10 +1313,177 @@
             offset: 50
         });
 
+        // ========== PENDING ORDER SYSTEM ==========
+        const PENDING_ORDER_KEY = 'lyyshop_pending_order';
+        const LAST_ORDER_KEY = 'lyyshop_last_order';
+        
         let currentProduct = null;
         let currentOrderId = null;
         let statusChecker = null;
         let allProducts = [];
+
+        // Cek pending order saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPendingOrder();
+            loadLastOrder();
+            loadProducts();
+            loadPaymentMethods();
+            
+            // Auto-save interval (setiap 30 detik)
+            setInterval(autoSaveCheckoutData, 30000);
+        });
+
+        // Fungsi untuk mengecek pending order
+        function checkPendingOrder() {
+            const pendingData = localStorage.getItem(PENDING_ORDER_KEY);
+            
+            if (pendingData) {
+                try {
+                    const order = JSON.parse(pendingData);
+                    const notification = document.getElementById('pendingNotification');
+                    const message = document.getElementById('pendingMessage');
+                    const details = document.getElementById('pendingDetails');
+                    const draftIndicator = document.getElementById('draftIndicator');
+                    
+                    // Format waktu
+                    const lastUpdate = new Date(order.timestamp);
+                    const timeString = lastUpdate.toLocaleString('id-ID', {
+                        dateStyle: 'full',
+                        timeStyle: 'short'
+                    });
+                    
+                    // Tampilkan detail
+                    if (order.productName) {
+                        document.getElementById('pendingProduct').textContent = order.productName;
+                        document.getElementById('pendingPrice').textContent = order.productPrice;
+                        document.getElementById('pendingEmail').textContent = order.email || 'Belum diisi';
+                        details.classList.remove('hidden');
+                    }
+                    
+                    message.innerHTML = `Kamu memiliki pesanan yang belum diselesaikan dari ${timeString}.`;
+                    
+                    notification.classList.add('show');
+                    draftIndicator.classList.remove('hidden');
+                    
+                } catch (e) {
+                    console.error('Error parsing pending order:', e);
+                }
+            }
+        }
+
+        // Fungsi untuk melanjutkan pending order
+        function resumePendingOrder() {
+            const pendingData = localStorage.getItem(PENDING_ORDER_KEY);
+            
+            if (pendingData) {
+                try {
+                    const order = JSON.parse(pendingData);
+                    
+                    // Cari produk yang sesuai
+                    const product = allProducts.find(p => p.id === order.productId);
+                    
+                    if (product) {
+                        // Buka modal checkout dengan data yang tersimpan
+                        openCheckout({
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            category: product.category
+                        });
+                        
+                        // Isi email dan payment method
+                        setTimeout(() => {
+                            if (order.email) {
+                                document.getElementById('customerEmail').value = order.email;
+                            }
+                            if (order.paymentMethod) {
+                                document.getElementById('paymentMethod').value = order.paymentMethod;
+                            }
+                        }, 500);
+                    } else {
+                        // Produk tidak ditemukan, hapus pending order
+                        cancelPendingOrder();
+                        showToast('Produk tidak tersedia lagi', 'error');
+                    }
+                    
+                } catch (e) {
+                    console.error('Error resuming order:', e);
+                }
+            }
+        }
+
+        // Fungsi untuk membatalkan pending order
+        function cancelPendingOrder() {
+            if (confirm('Yakin ingin membatalkan pesanan pending?')) {
+                localStorage.removeItem(PENDING_ORDER_KEY);
+                document.getElementById('pendingNotification').classList.remove('show');
+                document.getElementById('draftIndicator').classList.add('hidden');
+                showToast('Pesanan pending telah dibatalkan', 'success');
+            }
+        }
+
+        // Fungsi untuk auto-save data checkout
+        function autoSaveCheckoutData() {
+            if (!currentProduct) return;
+            
+            const email = document.getElementById('customerEmail')?.value;
+            const paymentMethod = document.getElementById('paymentMethod')?.value;
+            
+            if (email || paymentMethod) {
+                const pendingOrder = {
+                    productId: currentProduct.id,
+                    productName: currentProduct.name,
+                    productPrice: `Rp ${currentProduct.price.toLocaleString('id-ID')}`,
+                    email: email,
+                    paymentMethod: paymentMethod,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(pendingOrder));
+                
+                // Tampilkan draft indicator
+                document.getElementById('draftIndicator').classList.remove('hidden');
+                
+                console.log('Checkout data auto-saved');
+            }
+        }
+
+        // Fungsi untuk load pesanan terakhir
+        function loadLastOrder() {
+            const lastOrder = localStorage.getItem(LAST_ORDER_KEY);
+            
+            if (lastOrder) {
+                try {
+                    const order = JSON.parse(lastOrder);
+                    const infoDiv = document.getElementById('lastOrderInfo');
+                    const detailsDiv = document.getElementById('lastOrderDetails');
+                    const timeSpan = document.querySelector('#lastOrderTime span');
+                    
+                    const completedTime = new Date(order.completedAt);
+                    const timeString = completedTime.toLocaleString('id-ID', {
+                        dateStyle: 'full',
+                        timeStyle: 'short'
+                    });
+                    
+                    detailsDiv.innerHTML = `
+                        <div class="grid grid-cols-2 gap-3">
+                            <span class="text-white/70">Produk:</span>
+                            <span class="text-white font-semibold">${order.productName || '-'}</span>
+                            <span class="text-white/70">Harga:</span>
+                            <span class="text-white font-semibold">${order.productPrice || '-'}</span>
+                            <span class="text-white/70">Email:</span>
+                            <span class="text-white font-semibold break-all">${order.email || '-'}</span>
+                        </div>
+                    `;
+                    
+                    timeSpan.textContent = `Pesanan selesai: ${timeString}`;
+                    infoDiv.classList.remove('hidden');
+                    
+                } catch (e) {
+                    console.error('Error loading last order:', e);
+                }
+            }
+        }
 
         // Mobile menu toggle
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
@@ -1172,11 +1522,6 @@
                 displayProducts(filtered);
             }
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProducts();
-            loadPaymentMethods();
-        });
 
         async function loadProducts() {
             try {
@@ -1393,6 +1738,9 @@
             document.getElementById('checkoutModal').classList.remove('active');
             document.body.style.overflow = '';
             if (statusChecker) clearInterval(statusChecker);
+            
+            // Cek apakah perlu simpan draft
+            autoSaveCheckoutData();
         }
 
         document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
@@ -1463,6 +1811,11 @@
 
                     startStatusCheck(data.orderId);
                     showToast('Payment created successfully', 'success');
+                    
+                    // Hapus pending order karena sudah diproses
+                    localStorage.removeItem(PENDING_ORDER_KEY);
+                    document.getElementById('draftIndicator').classList.add('hidden');
+                    
                 } else {
                     showToast(data.error || 'Failed to create payment', 'error');
                 }
@@ -1502,12 +1855,29 @@
                     if (data.order?.status === 'completed') {
                         clearInterval(statusChecker);
                         
+                        // Simpan ke last order
+                        const lastOrder = {
+                            productId: currentProduct.id,
+                            productName: currentProduct.name,
+                            productPrice: `Rp ${currentProduct.price.toLocaleString('id-ID')}`,
+                            email: document.getElementById('customerEmail').value,
+                            completedAt: new Date().toISOString()
+                        };
+                        localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(lastOrder));
+                        
                         closeCheckoutModal();
                         
                         document.getElementById('successEmail').textContent = document.getElementById('customerEmail').value;
                         document.getElementById('successModal').classList.add('active');
                         
                         showToast('Payment successful!', 'success');
+                        
+                        // Hapus pending order
+                        localStorage.removeItem(PENDING_ORDER_KEY);
+                        document.getElementById('draftIndicator').classList.add('hidden');
+                        
+                        // Load last order
+                        loadLastOrder();
                     }
                 } catch (error) {
                     console.error('Status check error:', error);
@@ -1524,9 +1894,27 @@
 
                 if (data.order?.status === 'completed') {
                     clearInterval(statusChecker);
+                    
+                    // Simpan ke last order
+                    const lastOrder = {
+                        productId: currentProduct.id,
+                        productName: currentProduct.name,
+                        productPrice: `Rp ${currentProduct.price.toLocaleString('id-ID')}`,
+                        email: document.getElementById('customerEmail').value,
+                        completedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(lastOrder));
+                    
                     closeCheckoutModal();
                     document.getElementById('successEmail').textContent = document.getElementById('customerEmail').value;
                     document.getElementById('successModal').classList.add('active');
+                    
+                    // Hapus pending order
+                    localStorage.removeItem(PENDING_ORDER_KEY);
+                    document.getElementById('draftIndicator').classList.add('hidden');
+                    
+                    // Load last order
+                    loadLastOrder();
                 } else {
                     showToast(`Status: ${data.order?.status || 'PENDING'}`, 'info');
                 }
@@ -1572,6 +1960,8 @@
                     document.body.style.overflow = '';
                     if (overlay.id === 'checkoutModal' && statusChecker) {
                         clearInterval(statusChecker);
+                        // Auto-save saat modal ditutup
+                        autoSaveCheckoutData();
                     }
                 }
             });
@@ -1584,6 +1974,8 @@
                     document.body.style.overflow = '';
                     if (modal.id === 'checkoutModal' && statusChecker) {
                         clearInterval(statusChecker);
+                        // Auto-save saat modal ditutup
+                        autoSaveCheckoutData();
                     }
                 });
             }
