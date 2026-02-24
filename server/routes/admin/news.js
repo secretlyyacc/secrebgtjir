@@ -1,4 +1,3 @@
-// ========== SERVER-SIDE CODE ==========
 // server/routes/admin/news.js
 const express = require('express');
 const router = express.Router();
@@ -6,13 +5,24 @@ const fs = require('fs');
 const path = require('path');
 const { authenticateToken } = require('../../middleware/auth');
 
-const NEWS_PATH = path.join(__dirname, '../../data/news.json');
+// PERBAIKAN PATH: data folder ada di root, bukan di server
+const NEWS_PATH = path.join(__dirname, '../../../data/news.json');
 
 function readNews() {
     try {
-        if (!fs.existsSync(NEWS_PATH)) {
-            return { active: null, history: [] };
+        // Buat folder data dulu kalau belum ada
+        const dataDir = path.join(__dirname, '../../../data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
         }
+        
+        if (!fs.existsSync(NEWS_PATH)) {
+            // Buat file default kalau belum ada
+            const defaultNews = { active: null, history: [] };
+            fs.writeFileSync(NEWS_PATH, JSON.stringify(defaultNews, null, 2));
+            return defaultNews;
+        }
+        
         return JSON.parse(fs.readFileSync(NEWS_PATH, 'utf8'));
     } catch (error) {
         console.error('Error reading news:', error);
@@ -22,6 +32,12 @@ function readNews() {
 
 function writeNews(data) {
     try {
+        // Pastikan folder data ada
+        const dataDir = path.join(__dirname, '../../../data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        
         fs.writeFileSync(NEWS_PATH, JSON.stringify(data, null, 2));
         return true;
     } catch (error) {
@@ -30,7 +46,7 @@ function writeNews(data) {
     }
 }
 
-// Get active news (public)
+// Public endpoint - no auth needed
 router.get('/active', (req, res) => {
     try {
         const news = readNews();
@@ -43,7 +59,7 @@ router.get('/active', (req, res) => {
     }
 });
 
-// Get all news (admin)
+// Admin endpoints - perlu auth
 router.get('/all', authenticateToken, (req, res) => {
     try {
         const news = readNews();
@@ -57,7 +73,6 @@ router.get('/all', authenticateToken, (req, res) => {
     }
 });
 
-// Create or update news (admin)
 router.post('/', authenticateToken, (req, res) => {
     try {
         const { title, message, imageUrl, isActive } = req.body;
@@ -81,14 +96,13 @@ router.post('/', authenticateToken, (req, res) => {
         };
 
         if (isActive) {
-            // Deactivate previous active news
+            // Deactivate previous news
             if (news.active) {
                 news.history = news.history || [];
                 news.history.unshift({
                     ...news.active,
                     deactivatedAt: new Date().toISOString()
                 });
-                // Keep only last 20 history items
                 news.history = news.history.slice(0, 20);
             }
             news.active = newNews;
@@ -111,11 +125,11 @@ router.post('/', authenticateToken, (req, res) => {
             res.status(500).json({ success: false, error: 'Failed to save news' });
         }
     } catch (error) {
+        console.error('Error saving news:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Deactivate current news (admin)
 router.post('/deactivate', authenticateToken, (req, res) => {
     try {
         const news = readNews();
@@ -142,7 +156,6 @@ router.post('/deactivate', authenticateToken, (req, res) => {
     }
 });
 
-// Delete news from history (admin)
 router.delete('/history/:id', authenticateToken, (req, res) => {
     try {
         const { id } = req.params;
