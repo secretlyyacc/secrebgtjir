@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     
-    <!-- Primary Meta Tags -->
     <title>LyyShop ID - Premium Game Accounts & Digital Streaming Termurah</title>
     <meta name="title" content="LyyShop ID - Premium Game Accounts & Digital Streaming Termurah">
     <meta name="description" content="LyyShop ID: Pusat pembelian akun game premium, Netflix, Spotify, Viu, dan berbagai akun digital lainnya. Proses instan, garansi 100%, harga termurah se-Indonesia!">
@@ -12,19 +11,15 @@
     <meta name="author" content="LyyTechID">
     <meta name="robots" content="index, follow">
     
-    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="/img/logo.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.png">
     <link rel="apple-touch-icon" href="/img/logo.png">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Animation Library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
     
     <style>
@@ -32,20 +27,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         :root {
             --primary-60: #0284c7;
             --primary-30: #38bdf8;
             --primary-10: #7dd3fc;
-            --accent-gold: #fbbf24;
-            --accent-orange: #f97316;
             --text-light: #f8fafc;
-            --text-dark: #0c4a6e;
             --glass-bg: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(125, 211, 252, 0.3);
             --safe-area-top: env(safe-area-inset-top);
@@ -62,7 +52,6 @@
             min-height: 100vh;
             color: var(--text-light);
             overflow-x: hidden;
-            position: relative;
         }
 
         body::before {
@@ -77,7 +66,6 @@
             z-index: -1;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 12px;
             height: 12px;
@@ -93,12 +81,7 @@
             border-radius: 10px;
             border: 2px solid transparent;
         }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, white, var(--primary-30));
-        }
 
-        /* Navbar */
         .navbar {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px);
@@ -131,7 +114,6 @@
             background: white;
             transition: width 0.3s ease;
             border-radius: 2px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .nav-link:hover::after,
@@ -139,7 +121,6 @@
             width: 100%;
         }
 
-        /* Banner */
         .banner-container {
             position: relative;
             width: 100%;
@@ -166,7 +147,6 @@
             background: linear-gradient(90deg, rgba(2, 132, 199, 0.4) 0%, transparent 50%, rgba(2, 132, 199, 0.4) 100%);
         }
 
-        /* Product Card */
         .product-card {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(12px);
@@ -295,21 +275,6 @@
             box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn-primary:hover::after {
-            left: 100%;
-        }
-
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -338,7 +303,6 @@
             box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.2);
         }
 
-        /* Stat Cards */
         .stat-card {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(12px);
@@ -382,7 +346,6 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        /* Feature Items */
         .feature-item {
             text-align: center;
             padding: 28px;
@@ -415,7 +378,6 @@
             box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
         }
 
-        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -479,7 +441,6 @@
             transform: rotate(90deg);
         }
 
-        /* Form */
         .form-input, .form-select {
             width: 100%;
             padding: 18px 22px;
@@ -516,7 +477,6 @@
             color: white;
         }
 
-        /* Category Pills */
         .category-pill {
             display: inline-block;
             padding: 12px 28px;
@@ -540,7 +500,6 @@
             box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -561,7 +520,6 @@
             text-align: center;
         }
 
-        /* Pending Order Notification */
         .pending-notification {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             border-radius: 20px;
@@ -701,7 +659,6 @@
             }
         }
 
-        /* Footer */
         .footer {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(15px);
@@ -746,7 +703,6 @@
             box-shadow: 0 20px 30px -8px rgba(0, 0, 0, 0.2);
         }
 
-        /* Loading Spinner */
         .spinner {
             width: 60px;
             height: 60px;
@@ -758,18 +714,6 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .stat-icon {
-                width: 80px;
-                height: 80px;
-            }
-            .feature-icon {
-                width: 80px;
-                height: 80px;
-            }
         }
 
         @media (max-width: 768px) {
@@ -814,10 +758,6 @@
         }
 
         @media (max-width: 640px) {
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .product-card {
                 padding: 24px;
             }
@@ -832,21 +772,6 @@
             }
         }
 
-        @media (max-width: 480px) {
-            .stat-icon {
-                width: 60px;
-                height: 60px;
-            }
-            .feature-icon {
-                width: 60px;
-                height: 60px;
-            }
-            .stat-number {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* Touch Optimizations */
         @media (hover: none) and (pointer: coarse) {
             .product-card:hover,
             .stat-card:hover,
@@ -863,7 +788,6 @@
             }
         }
 
-        /* Safe Area Support */
         @supports (padding-top: env(safe-area-inset-top)) {
             .navbar {
                 padding-top: env(safe-area-inset-top);
@@ -873,7 +797,6 @@
             }
         }
 
-        /* Utility Classes */
         .text-shadow {
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -885,10 +808,35 @@
         .hover-lift:hover {
             transform: translateY(-4px);
         }
+        
+        .news-popup-content {
+            animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        #newsImageContainer::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to top, rgba(10, 38, 71, 0.98), transparent);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3 sm:py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2 sm:gap-4">
@@ -903,7 +851,6 @@
                 </span>
             </div>
             
-            <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-6 lg:gap-8">
                 <a href="#home" class="nav-link">Home</a>
                 <a href="#products" class="nav-link">Products</a>
@@ -911,7 +858,6 @@
                 <a href="#features" class="nav-link">Features</a>
             </div>
             
-            <!-- Mobile Menu Button -->
             <button id="mobileMenuBtn" class="md:hidden text-white text-2xl p-2 hover:bg-white/20 rounded-xl transition">
                 <i class="fas fa-bars"></i>
             </button>
@@ -922,7 +868,6 @@
             </a>
         </div>
         
-        <!-- Mobile Menu Dropdown -->
         <div id="mobileMenu" class="md:hidden hidden mt-4 bg-white/20 backdrop-blur-lg rounded-2xl p-4 border border-white/30 mx-4">
             <a href="#home" class="block py-3 px-4 hover:bg-white/20 rounded-xl transition text-white font-medium">Home</a>
             <a href="#products" class="block py-3 px-4 hover:bg-white/20 rounded-xl transition text-white font-medium">Products</a>
@@ -934,152 +879,40 @@
         </div>
     </nav>
 
-    <!-- ========== TAMBAHKAN DI INDEX.HTML (setelah navbar, sebelum main content) ========== -->
-<!-- News Popup Modal -->
-<div id="newsPopup" class="modal-overlay" style="display: none;">
-    <div class="modal-content news-popup-content" style="max-width: 450px; background: linear-gradient(135deg, rgba(10, 38, 71, 0.98), rgba(15, 43, 79, 0.98)); border: 2px solid rgba(96, 165, 250, 0.3); border-radius: 32px; padding: 0; overflow: hidden;">
-        <div class="relative">
-            <button onclick="closeNewsPopup()" class="absolute top-4 right-4 z-10 text-white/70 hover:text-white text-2xl w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center transition-all hover:bg-black/40">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <div id="newsImageContainer" class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative overflow-hidden">
-                <img id="newsImage" src="" alt="News Banner" class="w-full h-full object-cover" style="display: none;">
-                <div id="newsImageFallback" class="w-full h-full flex items-center justify-center">
-                    <i class="fas fa-bullhorn text-6xl text-white/30"></i>
-                </div>
-            </div>
-            
-            <div class="p-6 pt-4">
-                <h2 id="newsTitle" class="text-2xl font-bold text-white mb-3"></h2>
-                <p id="newsMessage" class="text-white/80 text-base leading-relaxed mb-6"></p>
+    <div id="newsPopup" class="modal-overlay" style="display: none;">
+        <div class="modal-content news-popup-content" style="max-width: 450px; background: linear-gradient(135deg, rgba(10, 38, 71, 0.98), rgba(15, 43, 79, 0.98)); border: 2px solid rgba(96, 165, 250, 0.3); border-radius: 32px; padding: 0; overflow: hidden;">
+            <div class="relative">
+                <button onclick="closeNewsPopup()" class="absolute top-4 right-4 z-10 text-white/70 hover:text-white text-2xl w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center transition-all hover:bg-black/40">
+                    <i class="fas fa-times"></i>
+                </button>
                 
-                <div class="flex items-center justify-between gap-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="dontShowToday" class="w-4 h-4 rounded border-white/30 bg-white/10 text-blue-500 focus:ring-blue-500 focus:ring-offset-0">
-                        <span class="text-sm text-white/70">Jangan tampilkan hari ini</span>
-                    </label>
+                <div id="newsImageContainer" class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative overflow-hidden">
+                    <img id="newsImage" src="" alt="News Banner" class="w-full h-full object-cover" style="display: none;">
+                    <div id="newsImageFallback" class="w-full h-full flex items-center justify-center">
+                        <i class="fas fa-bullhorn text-6xl text-white/30"></i>
+                    </div>
+                </div>
+                
+                <div class="p-6 pt-4">
+                    <h2 id="newsTitle" class="text-2xl font-bold text-white mb-3"></h2>
+                    <p id="newsMessage" class="text-white/80 text-base leading-relaxed mb-6"></p>
                     
-                    <button onclick="closeNewsPopup()" class="btn-primary text-sm px-6 py-3">
-                        Tutup
-                    </button>
+                    <div class="flex items-center justify-between gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="dontShowToday" class="w-4 h-4 rounded border-white/30 bg-white/10 text-blue-500 focus:ring-blue-500 focus:ring-offset-0">
+                            <span class="text-sm text-white/70">Jangan tampilkan hari ini</span>
+                        </label>
+                        
+                        <button onclick="closeNewsPopup()" class="btn-primary text-sm px-6 py-3">
+                            Tutup
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<style>
-.news-popup-content {
-    animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideUpFade {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-#newsImageContainer {
-    position: relative;
-}
-
-#newsImageContainer::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: linear-gradient(to top, rgba(10, 38, 71, 0.98), transparent);
-    pointer-events: none;
-}
-</style>
-
-<script>
-// ========== NEWS POPUP SYSTEM ==========
-const NEWS_STORAGE_KEY = 'lyyshop_news_hide';
-const NEWS_API_URL = '/api/news/active';
-
-async function loadAndShowNews() {
-    try {
-        // Cek apakah user memilih untuk tidak ditampilkan hari ini
-        const hideUntil = localStorage.getItem(NEWS_STORAGE_KEY);
-        if (hideUntil) {
-            const hideDate = new Date(hideUntil);
-            const today = new Date();
-            if (hideDate.toDateString() === today.toDateString()) {
-                console.log('News hidden for today');
-                return;
-            }
-        }
-
-        const response = await fetch(NEWS_API_URL);
-        if (!response.ok) return;
-        
-        const data = await response.json();
-        if (!data.success || !data.news || !data.news.isActive) return;
-
-        showNewsPopup(data.news);
-    } catch (error) {
-        console.error('Error loading news:', error);
-    }
-}
-
-function showNewsPopup(news) {
-    const modal = document.getElementById('newsPopup');
-    const titleEl = document.getElementById('newsTitle');
-    const messageEl = document.getElementById('newsMessage');
-    const imageEl = document.getElementById('newsImage');
-    const fallbackEl = document.getElementById('newsImageFallback');
-    
-    titleEl.textContent = news.title || 'Announcement';
-    messageEl.textContent = news.message || '';
-    
-    if (news.imageUrl) {
-        imageEl.src = news.imageUrl;
-        imageEl.style.display = 'block';
-        fallbackEl.style.display = 'none';
-        
-        imageEl.onerror = function() {
-            imageEl.style.display = 'none';
-            fallbackEl.style.display = 'flex';
-        };
-    } else {
-        imageEl.style.display = 'none';
-        fallbackEl.style.display = 'flex';
-    }
-    
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeNewsPopup() {
-    const dontShow = document.getElementById('dontShowToday').checked;
-    
-    if (dontShow) {
-        const today = new Date().toDateString();
-        localStorage.setItem(NEWS_STORAGE_KEY, today);
-    }
-    
-    document.getElementById('newsPopup').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-// Panggil saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(loadAndShowNews, 1500); // Delay 1.5 detik
-});
-</script>
-
-    <!-- Main Content -->
     <main class="pt-28 sm:pt-32 pb-12 px-4 max-w-7xl mx-auto">
-        <!-- Pending Order Notification -->
         <div id="pendingNotification" class="pending-notification">
             <div class="flex items-start gap-4">
                 <div class="text-4xl">⏳</div>
@@ -1110,7 +943,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
 
-        <!-- Banner Section -->
         <section id="home" class="mb-20 sm:mb-24" data-aos="fade-up">
             <div class="banner-container">
                 <img src="https://shop.lyxtech.xyz/img/banner.png" 
@@ -1124,12 +956,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     Premium Digital Accounts
                 </h1>
                 <p class="text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl mx-auto px-4 leading-relaxed">
-                    Dapatkan akun game premium & streaming (Netflix, Spotify, Viu, dll) dengan harga termurah, proses instan, dan garansi 100%!
+                    Dapatkan akun game premium & streaming dengan harga termurah, proses instan, dan garansi 100%!
                 </p>
             </div>
         </section>
 
-        <!-- Stats Section -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-7 mb-20 sm:mb-24">
             <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="stat-icon">
@@ -1168,7 +999,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </section>
 
-        <!-- Categories Section -->
         <section id="categories" class="mb-20 sm:mb-24">
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16 text-white text-shadow" data-aos="fade-up">
                 Browse <span class="text-white">Categories</span>
@@ -1183,19 +1013,16 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </section>
 
-        <!-- Products Section -->
         <section id="products" class="mb-20 sm:mb-24">
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16 text-white text-shadow" data-aos="fade-up">
                 Our <span class="text-white">Premium Products</span>
             </h2>
             
-            <!-- Loading State -->
             <div id="loadingContainer" class="flex justify-center items-center py-20 hidden" data-aos="fade-up">
                 <div class="spinner"></div>
                 <span class="ml-4 text-white text-xl">Loading products...</span>
             </div>
             
-            <!-- Error State -->
             <div id="errorContainer" class="hidden text-center py-20" data-aos="fade-up">
                 <i class="fas fa-exclamation-triangle text-6xl text-yellow-400 mb-6"></i>
                 <p class="text-white text-xl mb-6">Failed to load products. Please refresh the page.</p>
@@ -1204,13 +1031,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             </div>
             
-            <!-- Products Grid -->
-            <div id="productContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-                <!-- Products will be loaded here via JavaScript -->
-            </div>
+            <div id="productContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
         </section>
 
-        <!-- Features Section -->
         <section id="features" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 sm:gap-8 mb-20 sm:mb-24">
             <div class="feature-item" data-aos="fade-up" data-aos-delay="100">
                 <div class="feature-icon">
@@ -1245,32 +1068,26 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </section>
 
-        <!-- Payment Methods -->
         <section class="mb-20 sm:mb-24">
             <h2 class="text-2xl sm:text-3xl font-bold text-center mb-10 text-white" data-aos="fade-up">
                 Payment Methods
             </h2>
             <div class="flex flex-wrap justify-center gap-4" data-aos="fade-up">
                 <div class="bg-white/20 px-8 py-4 rounded-2xl border border-white/30 backdrop-blur-sm text-white font-medium">
-                    <i class="fas fa-credit-card mr-2"></i>
-                    <span>QRIS</span>
+                    <i class="fas fa-credit-card mr-2"></i> QRIS
                 </div>
                 <div class="bg-white/20 px-8 py-4 rounded-2xl border border-white/30 backdrop-blur-sm text-white font-medium">
-                    <i class="fas fa-university mr-2"></i>
-                    <span>Bank Transfer</span>
+                    <i class="fas fa-university mr-2"></i> Bank Transfer
                 </div>
                 <div class="bg-white/20 px-8 py-4 rounded-2xl border border-white/30 backdrop-blur-sm text-white font-medium">
-                    <i class="fas fa-wallet mr-2"></i>
-                    <span>E-Wallet</span>
+                    <i class="fas fa-wallet mr-2"></i> E-Wallet
                 </div>
                 <div class="bg-white/20 px-8 py-4 rounded-2xl border border-white/30 backdrop-blur-sm text-white font-medium">
-                    <i class="fas fa-mobile-alt mr-2"></i>
-                    <span>Pulsa</span>
+                    <i class="fas fa-mobile-alt mr-2"></i> Pulsa
                 </div>
             </div>
         </section>
 
-        <!-- Last Order Info -->
         <div id="lastOrderInfo" class="order-info hidden">
             <h3><i class="fas fa-history mr-2"></i> Pesanan Terakhir</h3>
             <div id="lastOrderDetails" class="order-details"></div>
@@ -1281,7 +1098,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-12">
@@ -1361,7 +1177,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </footer>
 
-    <!-- Checkout Modal -->
     <div id="checkoutModal" class="modal-overlay">
         <div class="modal-content relative">
             <span class="modal-close" onclick="closeCheckoutModal()">&times;</span>
@@ -1383,8 +1198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         placeholder="your@email.com"
                         required
                         class="form-input"
-                        oninput="autoSaveCheckoutData()"
-                    >
+                        oninput="autoSaveCheckoutData()">
                     <p class="text-xs text-white/70 mt-2">Account details will be sent here</p>
                 </div>
                 
@@ -1420,7 +1234,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Success Modal -->
     <div id="successModal" class="modal-overlay">
         <div class="modal-content text-center">
             <div class="text-7xl sm:text-8xl mb-6 animate-bounce">🎉</div>
@@ -1444,10 +1257,8 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast hidden"></div>
 
-    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     <script>
         AOS.init({
@@ -1456,27 +1267,89 @@ document.addEventListener('DOMContentLoaded', function() {
             offset: 50
         });
 
-        // ========== PENDING ORDER SYSTEM ==========
         const PENDING_ORDER_KEY = 'lyyshop_pending_order';
         const LAST_ORDER_KEY = 'lyyshop_last_order';
+        const NEWS_STORAGE_KEY = 'lyyshop_news_hide';
+        const NEWS_API_URL = '/api/news/active';
         
         let currentProduct = null;
         let currentOrderId = null;
         let statusChecker = null;
         let allProducts = [];
 
-        // Cek pending order saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             checkPendingOrder();
             loadLastOrder();
             loadProducts();
             loadPaymentMethods();
+            setTimeout(loadAndShowNews, 1500);
             
-            // Auto-save interval (setiap 30 detik)
             setInterval(autoSaveCheckoutData, 30000);
         });
 
-        // Fungsi untuk mengecek pending order
+        async function loadAndShowNews() {
+            try {
+                const hideUntil = localStorage.getItem(NEWS_STORAGE_KEY);
+                if (hideUntil) {
+                    const hideDate = new Date(hideUntil);
+                    const today = new Date();
+                    if (hideDate.toDateString() === today.toDateString()) {
+                        return;
+                    }
+                }
+
+                const response = await fetch(NEWS_API_URL);
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                if (!data.success || !data.news || !data.news.isActive) return;
+
+                showNewsPopup(data.news);
+            } catch (error) {
+                console.error('Error loading news:', error);
+            }
+        }
+
+        function showNewsPopup(news) {
+            const modal = document.getElementById('newsPopup');
+            const titleEl = document.getElementById('newsTitle');
+            const messageEl = document.getElementById('newsMessage');
+            const imageEl = document.getElementById('newsImage');
+            const fallbackEl = document.getElementById('newsImageFallback');
+            
+            titleEl.textContent = news.title || 'Announcement';
+            messageEl.textContent = news.message || '';
+            
+            if (news.imageUrl) {
+                imageEl.src = news.imageUrl;
+                imageEl.style.display = 'block';
+                fallbackEl.style.display = 'none';
+                
+                imageEl.onerror = function() {
+                    imageEl.style.display = 'none';
+                    fallbackEl.style.display = 'flex';
+                };
+            } else {
+                imageEl.style.display = 'none';
+                fallbackEl.style.display = 'flex';
+            }
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        window.closeNewsPopup = function() {
+            const dontShow = document.getElementById('dontShowToday').checked;
+            
+            if (dontShow) {
+                const today = new Date().toDateString();
+                localStorage.setItem(NEWS_STORAGE_KEY, today);
+            }
+            
+            document.getElementById('newsPopup').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
         function checkPendingOrder() {
             const pendingData = localStorage.getItem(PENDING_ORDER_KEY);
             
@@ -1488,14 +1361,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const details = document.getElementById('pendingDetails');
                     const draftIndicator = document.getElementById('draftIndicator');
                     
-                    // Format waktu
                     const lastUpdate = new Date(order.timestamp);
                     const timeString = lastUpdate.toLocaleString('id-ID', {
                         dateStyle: 'full',
                         timeStyle: 'short'
                     });
                     
-                    // Tampilkan detail
                     if (order.productName) {
                         document.getElementById('pendingProduct').textContent = order.productName;
                         document.getElementById('pendingPrice').textContent = order.productPrice;
@@ -1514,19 +1385,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Fungsi untuk melanjutkan pending order
-        function resumePendingOrder() {
+        window.resumePendingOrder = function() {
             const pendingData = localStorage.getItem(PENDING_ORDER_KEY);
             
             if (pendingData) {
                 try {
                     const order = JSON.parse(pendingData);
                     
-                    // Cari produk yang sesuai
                     const product = allProducts.find(p => p.id === order.productId);
                     
                     if (product) {
-                        // Buka modal checkout dengan data yang tersimpan
                         openCheckout({
                             id: product.id,
                             name: product.name,
@@ -1534,7 +1402,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             category: product.category
                         });
                         
-                        // Isi email dan payment method
                         setTimeout(() => {
                             if (order.email) {
                                 document.getElementById('customerEmail').value = order.email;
@@ -1544,7 +1411,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }, 500);
                     } else {
-                        // Produk tidak ditemukan, hapus pending order
                         cancelPendingOrder();
                         showToast('Produk tidak tersedia lagi', 'error');
                     }
@@ -1555,8 +1421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Fungsi untuk membatalkan pending order
-        function cancelPendingOrder() {
+        window.cancelPendingOrder = function() {
             if (confirm('Yakin ingin membatalkan pesanan pending?')) {
                 localStorage.removeItem(PENDING_ORDER_KEY);
                 document.getElementById('pendingNotification').classList.remove('show');
@@ -1565,7 +1430,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Fungsi untuk auto-save data checkout
         function autoSaveCheckoutData() {
             if (!currentProduct) return;
             
@@ -1583,15 +1447,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
                 
                 localStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(pendingOrder));
-                
-                // Tampilkan draft indicator
                 document.getElementById('draftIndicator').classList.remove('hidden');
-                
-                console.log('Checkout data auto-saved');
             }
         }
 
-        // Fungsi untuk load pesanan terakhir
         function loadLastOrder() {
             const lastOrder = localStorage.getItem(LAST_ORDER_KEY);
             
@@ -1628,7 +1487,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Mobile menu toggle
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
             const menu = document.getElementById('mobileMenu');
             menu.classList.toggle('hidden');
@@ -1671,7 +1529,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showLoading(true);
                 document.getElementById('errorContainer').classList.add('hidden');
                 
-                // Gunakan fetch dengan mode 'cors' dan tambahkan cache control
                 const res = await fetch('/api/roles', {
                     method: 'GET',
                     headers: {
@@ -1686,11 +1543,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const data = await res.json();
-                console.log('Products loaded:', data);
-                
                 allProducts = data.roles || [];
                 
-                // Category detection
                 allProducts = allProducts.map(product => {
                     let category = 'game';
                     const name = (product.name || '').toLowerCase();
@@ -1702,8 +1556,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         category = 'music';
                     } else if (name.includes('trial') || name.includes('coba') || desc.includes('trial') || name.includes('free')) {
                         category = 'trial';
-                    } else if (name.includes('panel') || name.includes('digital') || name.includes('droplet')) {
-                        category = 'game';
                     }
                     
                     return { ...product, category };
@@ -1722,6 +1574,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function updateProductSchema(products) {
+            let schemaElement = document.getElementById('productSchema');
+            if (!schemaElement) {
+                schemaElement = document.createElement('script');
+                schemaElement.id = 'productSchema';
+                schemaElement.type = 'application/ld+json';
+                document.head.appendChild(schemaElement);
+            }
+            
             const productSchema = {
                 "@context": "https://schema.org",
                 "@type": "ItemList",
@@ -1740,13 +1600,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }))
             };
             
-            const schemaElement = document.getElementById('productSchema');
-            if (schemaElement) {
-                schemaElement.textContent = JSON.stringify(productSchema);
-            }
+            schemaElement.textContent = JSON.stringify(productSchema);
         }
 
-        function handleImageError(img) {
+        window.handleImageError = function(img) {
             const container = img.parentElement;
             img.style.display = 'none';
             
@@ -1800,7 +1657,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 name: product.name,
                                 price: price,
                                 category: category
-                            }).replace(/'/g, "&apos;")})'
+                            })})'
                             class="btn-primary ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}"
                             ${isOutOfStock ? 'disabled' : ''}>
                             <i class="fas ${getCategoryIcon(category)}"></i>
@@ -1867,7 +1724,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        function openCheckout(product) {
+        window.openCheckout = function(product) {
             currentProduct = product;
             document.getElementById('selectedProductName').textContent = product.name;
             document.getElementById('selectedProductPrice').textContent = `Rp ${product.price.toLocaleString('id-ID')}`;
@@ -1877,12 +1734,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = 'hidden';
         }
 
-        function closeCheckoutModal() {
+        window.closeCheckoutModal = function() {
             document.getElementById('checkoutModal').classList.remove('active');
             document.body.style.overflow = '';
             if (statusChecker) clearInterval(statusChecker);
-            
-            // Cek apakah perlu simpan draft
             autoSaveCheckoutData();
         }
 
@@ -1955,7 +1810,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     startStatusCheck(data.orderId);
                     showToast('Payment created successfully', 'success');
                     
-                    // Hapus pending order karena sudah diproses
                     localStorage.removeItem(PENDING_ORDER_KEY);
                     document.getElementById('draftIndicator').classList.add('hidden');
                     
@@ -1998,7 +1852,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.order?.status === 'completed') {
                         clearInterval(statusChecker);
                         
-                        // Simpan ke last order
                         const lastOrder = {
                             productId: currentProduct.id,
                             productName: currentProduct.name,
@@ -2015,11 +1868,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         showToast('Payment successful!', 'success');
                         
-                        // Hapus pending order
                         localStorage.removeItem(PENDING_ORDER_KEY);
                         document.getElementById('draftIndicator').classList.add('hidden');
                         
-                        // Load last order
                         loadLastOrder();
                     }
                 } catch (error) {
@@ -2038,7 +1889,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.order?.status === 'completed') {
                     clearInterval(statusChecker);
                     
-                    // Simpan ke last order
                     const lastOrder = {
                         productId: currentProduct.id,
                         productName: currentProduct.name,
@@ -2052,11 +1902,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('successEmail').textContent = document.getElementById('customerEmail').value;
                     document.getElementById('successModal').classList.add('active');
                     
-                    // Hapus pending order
                     localStorage.removeItem(PENDING_ORDER_KEY);
                     document.getElementById('draftIndicator').classList.add('hidden');
                     
-                    // Load last order
                     loadLastOrder();
                 } else {
                     showToast(`Status: ${data.order?.status || 'PENDING'}`, 'info');
@@ -2066,7 +1914,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        function closeSuccessModal() {
+        window.closeSuccessModal = function() {
             document.getElementById('successModal').classList.remove('active');
             document.body.style.overflow = '';
             loadProducts();
@@ -2103,7 +1951,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.body.style.overflow = '';
                     if (overlay.id === 'checkoutModal' && statusChecker) {
                         clearInterval(statusChecker);
-                        // Auto-save saat modal ditutup
                         autoSaveCheckoutData();
                     }
                 }
@@ -2117,14 +1964,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.body.style.overflow = '';
                     if (modal.id === 'checkoutModal' && statusChecker) {
                         clearInterval(statusChecker);
-                        // Auto-save saat modal ditutup
                         autoSaveCheckoutData();
                     }
                 });
             }
         });
-
-        window.handleImageError = handleImageError;
     </script>
 </body>
 </html>
