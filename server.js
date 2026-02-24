@@ -86,6 +86,7 @@ app.use((req, res, next) => {
 
 const ordersAccountsRoutes = require('./server/routes/admin/orders-accounts');
 app.use('/api/admin', ordersAccountsRoutes);
+app.use('/api/news', require('./server/routes/admin/news'));
 
 const routeFiles = [
     { path: '/api/payment', file: 'payment' },
@@ -584,3 +585,4 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
+
